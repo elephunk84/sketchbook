@@ -75,6 +75,7 @@ int soil2;
 int SensorCount = 2;
 int CirculationPump = 5;
 int ResevoirPump = 4;
+volatile int buttonstate = LOW;
 #define I2C_ADDR    0x27 
 #define BACKLIGHT_PIN     3
 #define En_pin  2
@@ -84,6 +85,8 @@ int ResevoirPump = 4;
 #define D5_pin  5
 #define D6_pin  6
 #define D7_pin  7
+//int TEST_BUTTON = 19;
+//int WATER_BUTTON = 18;
 #define DS3231_I2C_ADDRESS 0x68
 LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 RTC_DS3231 rtc;
@@ -94,12 +97,14 @@ const char *string_table[] =
   "   Sleeping",
   "   Watering",
   "    Testing",
-  "  Zone 1 For 30s",
-  "  Zone 2 For 30s",
-  "  Zone 3 For 30s",
-  "  Zone 4 For 30s",
+  " Zone 1 For 30s ",
+  " Zone 2 For 30s ",
+  " Zone 3 For 30s ",
+  " Zone 4 For 30s ",
   "  Priming pump  ",
-  "",
+  "   Test Mode    ",
+  " Manual Run Mode",
+  "System Starting",
   };
 
 byte decToBcd(byte val)
@@ -121,18 +126,44 @@ void setup () {
   pinMode(Zone1Solenoid, OUTPUT);
   pinMode(Zone2Solenoid, OUTPUT);
   pinMode(Zone3Solenoid, OUTPUT);
-  pinMode(Zone4Solenoid, OUTPUT); 
+  pinMode(Zone4Solenoid, OUTPUT);
+  pinMode(19, INPUT_PULLUP);
+  pinMode(18, INPUT_PULLUP); 
   digitalWrite(Zone1Solenoid, HIGH);
   digitalWrite(Zone2Solenoid, HIGH);
   digitalWrite(Zone3Solenoid, HIGH);
   digitalWrite(Zone4Solenoid, HIGH); 
+  attachInterrupt(5, pin_READ, CHANGE);
+  attachInterrupt(4, pin_WATER, CHANGE); 
   Wire.begin();
   rtc.begin();
   lcd.begin (16,2); 
   lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
   lcd.setBacklight(HIGH);
   lcd.home ();
+  lcd.print(string_table[10]);
+  delay(5000);
   Serial.begin(57600);
+  }
+
+void pin_READ() {
+  Serial.println('Interrupt');
+  buttonstate = digitalRead(19);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(string_table[8]);
+  delay(Delay3);
+  read_sensors();
+}
+
+void pin_WATER() {
+  Serial.println('Interrupt');
+  buttonstate = digitalRead(18);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(string_table[9]);
+  delay(Delay3);
+  water_run();
 }
 
 void program() {
@@ -155,22 +186,7 @@ void program() {
   }
 
 void water_run(){
-    lcd_time(),
-    lcd.print(string_table[2]),
     read_sensors();
-    lcd.setCursor(0,1);
-    lcd.print(int (Zone1SensorValue));
-    lcd.print("%"),
-    lcd.setCursor(4,1),
-    lcd.print(Zone2SensorValue),
-    lcd.print("%"),
-    lcd.setCursor(8,1),
-    lcd.print(Zone3SensorValue),
-    lcd.print("%"),
-    lcd.setCursor(12,1),
-    lcd.print(Zone4SensorValue),
-    lcd.print("%"),
-    delay(5000);
     lcd.clear();
     lcd.setCursor(0,0);
     lcd.print(string_table[7]);
@@ -316,6 +332,22 @@ void read_sensors()  {
     Zone4Sensor1Value = soil1;
     Zone4Sensor2Value = soil2;
     Zone4SensorValue = (soil1 + soil2) / 2;
+    lcd_time();
+    lcd.print(string_table[2]);
+    lcd.setCursor(0,1);
+    lcd.print(int (Zone1SensorValue));
+    lcd.print("%");
+    lcd.setCursor(4,1);
+    lcd.print(Zone2SensorValue);
+    lcd.print("%");
+    lcd.setCursor(8,1);
+    lcd.print(Zone3SensorValue);
+    lcd.print("%");
+    lcd.setCursor(12,1);
+    lcd.print(Zone4SensorValue);
+    lcd.print("%");
+    delay(5000);
+    
     }
 
 void setDS3231time(byte second, byte minute, byte hour, byte dayOfWeek, byte
