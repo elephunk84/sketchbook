@@ -26,19 +26,30 @@ int delay_time;
 int soil1;
 int soil2; 
 int SensorCount = 2;
+int CirculationPump = 5;
+int ResevoirPump = 4;
+/*Start of User Defined Settings
+*/
+// Time1-5 are the hours for program to run (Sensors and watering)
 int Time1 = 8;
 int Time2 = 23;
 int Time3;
 int Time4;
 int Time5;
+// TimeMin is the minute on the hour for program to run.
 int TimeMin = 33;
+// Water levels are soil moisture settings in percent. So if the moisture in the soil reads less than WaterLevel
+// then the program wil run.
 int WaterLevel_1 = 60;
 int WaterLevel_2 = 60;
 int WaterLevel_3 = 60;
 int WaterLevel_4 = 60;
 int WaterLevel_5 = 60;
-int CirculationPump = 5;
-int ResevoirPump = 4;
+// ZoneSettings------
+/* Only user serviceable settings are
+   -Zone*Delay = Watering time in milliseconds so 1000 is 1sec and 30000 is 30sec
+   -Zone*WaterLevel = Moisture Level you want the zone set to, link to WaterLevels above
+*/
 int Zone1Solenoid = 50;
 int Zone1Sensors[] = {A12, A8};
 int Zone1Delay = 30000;
