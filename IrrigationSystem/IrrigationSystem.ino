@@ -18,7 +18,7 @@ int Time3;
 int Time4;
 int Time5;
 // TimeMin is the minute on the hour for program to run.
-int TimeMin = 33;
+int TimeMin = 0;
 // Water levels are soil moisture settings in percent. So if the moisture in the soil reads less than WaterLevel
 // then the program wil run.
 int WaterLevel_1 = 60;
@@ -28,7 +28,7 @@ int WaterLevel_4 = 60;
 int WaterLevel_5 = 60;
 // Watering run time's in milliseconds so 1000 is 1sec and 30000 is 30sec.
 int Delay1 = 10000; // 10seconds
-int Delay2 = 20000: // 20seconds
+int Delay2 = 20000; // 20seconds
 int Delay3 = 30000; // 30seconds
 int Delay4 = 60000; // 60seconds
 int Delay5 = 3000000; // 5mins - Used For Refilling Resevoir 
