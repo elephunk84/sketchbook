@@ -8,17 +8,35 @@
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 
+const char *string_table[] =
+{   
+  "   Sleeping",
+  "   Watering",
+  "    Testing",
+  " Zone 1 For 30s ",
+  " Zone 2 For 30s ",
+  " Zone 3 For 30s ",
+  " Zone 4 For 30s ",
+  "  Priming pump  ",
+  "   Test Mode    ",
+  " Manual Run Mode",
+  "System Starting",
+  "YES",
+  "NO",
+  "Interrupt",
+  };
+
 
 /*Start of User Defined Settings
 */
 // Time1-5 are the hours for program to run (Sensors and watering)
 int Time1 = 8;
-int Time2 = 19;
-int Time3 = 88;
+int Time2 = 14;
+int Time3 = 0;
 int Time4 = 88;
 int Time5 = 88;
 // TimeMin is the minute on the hour for program to run.
-int TimeMin =57;
+int TimeMin = 30;
 // Water levels are soil moisture settings in percent. So if the moisture in the soil reads less than WaterLevel
 // then the program wil run.
 int WaterLevel_1 = 60;
@@ -42,30 +60,30 @@ int Zone1Solenoid = 50;
 int Zone1Sensors[] = {A12, A8};
 int Zone1Delay = Delay3;
 int Zone1SensorValue;
-volatile char Zone1Water = 'NO';
-int Zone1WaterLevel = WaterLevel_1;
+String Zone1Water;
+int Zone1WaterLevel= WaterLevel_1;
 int Zone2Solenoid = 48;
 int Zone2Sensors[] = {A13, A9};
 int Zone2Delay = Delay3;
 int Zone2SensorValue;
-volatile char Zone2Water = 'NO';
+String Zone2Water;
 int Zone2WaterLevel = WaterLevel_1;
 int Zone3Solenoid = 44;
 int Zone3Sensors[] = {A14, A10};
 int Zone3Delay = Delay3;
 int Zone3SensorValue;
-volatile char Zone3Water = 'NO';
+String Zone3Water;
 int Zone3WaterLevel = WaterLevel_1;
 int Zone4Solenoid = 46;
 int Zone4Sensors[] = {A15, A11};
 int Zone4Delay = Delay3;
 int Zone4SensorValue;
-volatile char Zone4Water = 'NO';
+String Zone4Water;
 int Zone4WaterLevel = WaterLevel_1;
 
 // End Of User Settings
 
-int programDelay = 10000;
+int programDelay = 100;
 int n = 1;
 int solenoid;
 String water_info;
@@ -92,24 +110,6 @@ LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin)
 RTC_DS3231 rtc;
 int INTERRUPT_PIN = 22;
 volatile int state = LOW;
-const char *string_table[] =
-{   
-  "   Sleeping",
-  "   Watering",
-  "    Testing",
-  " Zone 1 For 30s ",
-  " Zone 2 For 30s ",
-  " Zone 3 For 30s ",
-  " Zone 4 For 30s ",
-  "  Priming pump  ",
-  "   Test Mode    ",
-  " Manual Run Mode",
-  "System Starting",
-  };
-const char  *syst_strings[] =
-{
-  "Interrupt",
-};
 
 byte decToBcd(byte val)
 {
@@ -147,7 +147,7 @@ void setup () {
   lcd.home ();
   lcd.print(string_table[10]);
   Serial.begin(57600);
-  }
+  };
 
 void pin_READ() {
 //  buttonstate = digitalRead(TEST_BUTTON);
@@ -156,7 +156,7 @@ void pin_READ() {
   lcd.print(string_table[8]);
   delay(Delay3);
   read_sensors();
-}
+};
 
 void pin_WATER() {
 //  buttonstate = digitalRead(WATER_BUTTON);
@@ -165,7 +165,7 @@ void pin_WATER() {
   lcd.print(string_table[9]);
   delay(Delay3);
   water_run();
-}
+};
 
 void program() {
   DateTime tt = rtc.now();
@@ -184,7 +184,7 @@ void program() {
   lcd.print(string_table[0]),
   Serial.flush();
   } 
-  }
+  };
 
 void water_run(){
     read_sensors();
@@ -192,53 +192,59 @@ void water_run(){
     lcd.setCursor(0,0);
     lcd.print(string_table[7]);
     if (Zone1SensorValue <= Zone1WaterLevel ) {
-      Zone1Water = 'YES';
+      Zone1Water = String(string_table[11]);
+      Serial.println(Zone1Water);
     };
     if (Zone2SensorValue <= Zone2WaterLevel ) {
-      Zone2Water = 'YES';
+      Zone2Water = String(string_table[11]);
+      Serial.println(Zone2Water);
     };
     if (Zone3SensorValue <= Zone3WaterLevel ) {
-      Zone3Water = 'YES';
+      Zone3Water = String(string_table[11]);
+      Serial.println(Zone3Water);
     };
     if (Zone4SensorValue <= Zone4WaterLevel ) {
-      Zone4Water = 'YES';
+      Zone4Water = String(string_table[11]);
+      Serial.println(Zone4Water);
     };
-    if (Zone1Water || Zone2Water || Zone3Water || Zone4Water == 'YES'){
+    if (Zone1Water || Zone2Water || Zone3Water || Zone4Water == String(string_table[11])){
       digitalWrite(CirculationPump, HIGH);
       delay(1500);
     };
-    if (Zone1Water == 'YES'){
+    if (Zone1Water == String(string_table[11])){
+      Serial.println(Zone1Water),
       delay_time = Zone1Delay,
       solenoid = Zone1Solenoid,
       water_info = string_table[3], 
       water_routine(); 
     };
-    if (Zone2Water == 'YES'){
+    if (Zone2Water == String(string_table[11])){
       delay_time = Zone2Delay,
       solenoid = Zone2Solenoid,
       water_info = string_table[4],
       water_routine();  
     };
-    if (Zone3Water == 'YES'){
+    if (Zone3Water == String(string_table[11])){
       delay_time = Zone3Delay,
       solenoid = Zone3Solenoid,
       water_info = string_table[5],
       water_routine();  
     };
-    if (Zone4Water == 'YES'){
+    if (Zone4Water == String(string_table[11])){
       delay_time = Zone4Delay,
       solenoid = Zone4Solenoid,
       water_info = string_table[6],
       water_routine();  
     }; 
     digitalWrite(CirculationPump, LOW);
-    Zone1Water = 'NO';
-    Zone2Water = 'NO';
-    Zone3Water = 'NO';
-    Zone4Water = 'NO';
-}
+    Zone1Water = String(string_table[12]);
+    Zone2Water = String(string_table[12]);
+    Zone3Water = String(string_table[12]);
+    Zone4Water = String(string_table[12]);
+};
 
 void water_routine() {
+  Serial.println("YES");
   lcd_time(),
   lcd.print(string_table[1]),
   digitalWrite(solenoid, LOW),
@@ -246,7 +252,7 @@ void water_routine() {
   lcd.print(water_info);
   delay(delay_time),
   digitalWrite(solenoid, HIGH);
-}
+};
     
 void lcd_time() {
     DateTime tt = rtc.now();
@@ -266,7 +272,7 @@ void lcd_time() {
     else 
       lcd.print(tt.minute(), DEC);
     
-}
+};
 
 void read_sensors()  {
     int Zone1Sensor1Value = analogRead(Zone1Sensors[0]);
@@ -349,7 +355,7 @@ void read_sensors()  {
     lcd.print("%");
     delay(5000);
     
-    }
+    };
 
 void setDS3231time(byte second, byte minute, byte hour, byte dayOfWeek, byte
 dayOfMonth, byte month, byte year)
@@ -365,7 +371,7 @@ dayOfMonth, byte month, byte year)
   Wire.write(decToBcd(month)); // set month
   Wire.write(decToBcd(year)); // set year (0 to 99)
   Wire.endTransmission();
-}
+};
 void readDS3231time(byte *second,
 byte *minute,
 byte *hour,
@@ -386,7 +392,7 @@ byte *year)
   *dayOfMonth = bcdToDec(Wire.read());
   *month = bcdToDec(Wire.read());
   *year = bcdToDec(Wire.read());
-}
+};
 
 void displayTime()
 {
@@ -439,7 +445,7 @@ void displayTime()
     Serial.println("Saturday");
     break;
   }
-}
+};
     
 void testSolenoids() {
     digitalWrite(Zone1Solenoid, LOW);
@@ -466,10 +472,10 @@ void testSolenoids() {
     digitalWrite(Zone4Solenoid, HIGH);
     Serial.println("Zone 4 Off");
     delay(1000);
-}
+};
 
 void loop(){
   delay(programDelay);
   program();
-  }
+  };
   
