@@ -14,11 +14,11 @@
 // Time1-5 are the hours for program to run (Sensors and watering)
 int Time1 = 8;
 int Time2 = 19;
-int Time3;
-int Time4;
-int Time5;
+int Time3 = 88;
+int Time4 = 88;
+int Time5 = 88;
 // TimeMin is the minute on the hour for program to run.
-int TimeMin =51;
+int TimeMin =57;
 // Water levels are soil moisture settings in percent. So if the moisture in the soil reads less than WaterLevel
 // then the program wil run.
 int WaterLevel_1 = 60;
@@ -42,25 +42,25 @@ int Zone1Solenoid = 50;
 int Zone1Sensors[] = {A12, A8};
 int Zone1Delay = Delay3;
 int Zone1SensorValue;
-int Zone1Water = 'NO';
+volatile char Zone1Water = 'NO';
 int Zone1WaterLevel = WaterLevel_1;
 int Zone2Solenoid = 48;
 int Zone2Sensors[] = {A13, A9};
 int Zone2Delay = Delay3;
 int Zone2SensorValue;
-int Zone2Water = 'NO';
+volatile char Zone2Water = 'NO';
 int Zone2WaterLevel = WaterLevel_1;
 int Zone3Solenoid = 44;
 int Zone3Sensors[] = {A14, A10};
 int Zone3Delay = Delay3;
 int Zone3SensorValue;
-int Zone3Water = 'NO';
+volatile char Zone3Water = 'NO';
 int Zone3WaterLevel = WaterLevel_1;
 int Zone4Solenoid = 46;
 int Zone4Sensors[] = {A15, A11};
 int Zone4Delay = Delay3;
 int Zone4SensorValue;
-int Zone4Water = 'NO';
+volatile char Zone4Water = 'NO';
 int Zone4WaterLevel = WaterLevel_1;
 
 // End Of User Settings
@@ -75,7 +75,7 @@ int soil2;
 int SensorCount = 2;
 int CirculationPump = 5;
 int ResevoirPump = 4;
-volatile int buttonstate = LOW;
+//volatile int buttonstate = HIGH;
 #define I2C_ADDR    0x27 
 #define BACKLIGHT_PIN     3
 #define En_pin  2
@@ -106,6 +106,10 @@ const char *string_table[] =
   " Manual Run Mode",
   "System Starting",
   };
+const char  *syst_strings[] =
+{
+  "Interrupt",
+};
 
 byte decToBcd(byte val)
 {
@@ -127,14 +131,14 @@ void setup () {
   pinMode(Zone2Solenoid, OUTPUT);
   pinMode(Zone3Solenoid, OUTPUT);
   pinMode(Zone4Solenoid, OUTPUT);
-  pinMode(19, INPUT_PULLUP);
-  pinMode(18, INPUT_PULLUP); 
+//  pinMode(TEST_BUTTON, INPUT);
+//  pinMode(WATER_BUTTON, INPUT); 
   digitalWrite(Zone1Solenoid, HIGH);
   digitalWrite(Zone2Solenoid, HIGH);
   digitalWrite(Zone3Solenoid, HIGH);
   digitalWrite(Zone4Solenoid, HIGH); 
-  attachInterrupt(5, pin_READ, CHANGE);
-  attachInterrupt(4, pin_WATER, CHANGE); 
+  attachInterrupt(19, pin_READ, CHANGE);
+  attachInterrupt(18, pin_WATER, CHANGE); 
   Wire.begin();
   rtc.begin();
   lcd.begin (16,2); 
@@ -142,13 +146,11 @@ void setup () {
   lcd.setBacklight(HIGH);
   lcd.home ();
   lcd.print(string_table[10]);
-  delay(5000);
   Serial.begin(57600);
   }
 
 void pin_READ() {
-  Serial.println('Interrupt');
-  buttonstate = digitalRead(19);
+//  buttonstate = digitalRead(TEST_BUTTON);
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(string_table[8]);
@@ -157,8 +159,7 @@ void pin_READ() {
 }
 
 void pin_WATER() {
-  Serial.println('Interrupt');
-  buttonstate = digitalRead(18);
+//  buttonstate = digitalRead(WATER_BUTTON);
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(string_table[9]);
@@ -175,7 +176,7 @@ void program() {
   Serial.print(tt.minute(), DEC);
   Serial.print(':');
   Serial.println(tt.second(), DEC);
-  if ((tthour == Time1 || Time2 || Time3 || Time4 || Time5 ) && ttmin == TimeMin ){
+  if ((tthour == Time1 || Time2 || Time3 || Time4 || Time5 ) and ttmin == TimeMin ){
     water_run();
   }
   else {
@@ -468,7 +469,7 @@ void testSolenoids() {
 }
 
 void loop(){
-  program();
   delay(programDelay);
-}
+  program();
+  }
   
