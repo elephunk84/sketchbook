@@ -13,12 +13,12 @@
 */
 // Time1-5 are the hours for program to run (Sensors and watering)
 int Time1 = 8;
-int Time2 = 23;
+int Time2 = 19;
 int Time3;
 int Time4;
 int Time5;
 // TimeMin is the minute on the hour for program to run.
-int TimeMin = 0;
+int TimeMin =51;
 // Water levels are soil moisture settings in percent. So if the moisture in the soil reads less than WaterLevel
 // then the program wil run.
 int WaterLevel_1 = 60;
@@ -98,7 +98,7 @@ const char *string_table[] =
   "  Zone 2 For 30s",
   "  Zone 3 For 30s",
   "  Zone 4 For 30s",
-  "",
+  "  Priming pump  ",
   "",
   };
 
@@ -171,8 +171,9 @@ void water_run(){
     lcd.print(Zone4SensorValue),
     lcd.print("%"),
     delay(5000);
-    lcd_time();
-    lcd.print(string_table[8]);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(string_table[7]);
     if (Zone1SensorValue <= Zone1WaterLevel ) {
       Zone1Water = 'YES';
     };
