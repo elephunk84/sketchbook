@@ -65,6 +65,7 @@ int Zone4WaterLevel = WaterLevel_1;
 
 // End Of User Settings
 
+int programDelay = 10000;
 int n = 1;
 int solenoid;
 String water_info;
@@ -149,7 +150,6 @@ void program() {
   else {
   lcd_time(),
   lcd.print(string_table[0]),
-  delay(1000),
   Serial.flush();
   } 
   }
@@ -436,5 +436,6 @@ void testSolenoids() {
 
 void loop(){
   program();
+  delay(programDelay);
 }
   
