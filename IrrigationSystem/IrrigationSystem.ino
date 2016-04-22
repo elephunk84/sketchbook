@@ -8,26 +8,7 @@
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 
-#define I2C_ADDR    0x27 
-#define BACKLIGHT_PIN     3
-#define En_pin  2
-#define Rw_pin  1
-#define Rs_pin  0
-#define D4_pin  4
-#define D5_pin  5
-#define D6_pin  6
-#define D7_pin  7
-#define DS3231_I2C_ADDRESS 0x68
 
-int n = 1;
-int solenoid;
-String water_info;
-int delay_time;
-int soil1;
-int soil2; 
-int SensorCount = 2;
-int CirculationPump = 5;
-int ResevoirPump = 4;
 /*Start of User Defined Settings
 */
 // Time1-5 are the hours for program to run (Sensors and watering)
@@ -45,42 +26,68 @@ int WaterLevel_2 = 60;
 int WaterLevel_3 = 60;
 int WaterLevel_4 = 60;
 int WaterLevel_5 = 60;
+// Watering run time's in milliseconds so 1000 is 1sec and 30000 is 30sec.
+int Delay1 = 10000; // 10seconds
+int Delay2 = 20000: // 20seconds
+int Delay3 = 30000; // 30seconds
+int Delay4 = 60000; // 60seconds
+int Delay5 = 3000000; // 5mins - Used For Refilling Resevoir 
 // ZoneSettings------
 /* Only user serviceable settings are
-   -Zone*Delay = Watering time in milliseconds so 1000 is 1sec and 30000 is 30sec
+   -Zone*Delay = Watering time, Link to Delays above - can be added together using ( brackets) like (Delay2 + Delay3) would give a run
+   -- time of 50seconds.
    -Zone*WaterLevel = Moisture Level you want the zone set to, link to WaterLevels above
 */
 int Zone1Solenoid = 50;
 int Zone1Sensors[] = {A12, A8};
-int Zone1Delay = 30000;
+int Zone1Delay = Delay3;
 int Zone1SensorValue;
 int Zone1Water = 'NO';
 int Zone1WaterLevel = WaterLevel_1;
 int Zone2Solenoid = 48;
 int Zone2Sensors[] = {A13, A9};
-int Zone2Delay = 30000;
+int Zone2Delay = Delay3;
 int Zone2SensorValue;
 int Zone2Water = 'NO';
 int Zone2WaterLevel = WaterLevel_1;
 int Zone3Solenoid = 44;
 int Zone3Sensors[] = {A14, A10};
-int Zone3Delay = 30000;
+int Zone3Delay = Delay3;
 int Zone3SensorValue;
 int Zone3Water = 'NO';
 int Zone3WaterLevel = WaterLevel_1;
 int Zone4Solenoid = 46;
 int Zone4Sensors[] = {A15, A11};
-int Zone4Delay = 30000;
+int Zone4Delay = Delay3;
 int Zone4SensorValue;
 int Zone4Water = 'NO';
 int Zone4WaterLevel = WaterLevel_1;
 
-LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
+// End Of User Settings
 
+int n = 1;
+int solenoid;
+String water_info;
+int delay_time;
+int soil1;
+int soil2; 
+int SensorCount = 2;
+int CirculationPump = 5;
+int ResevoirPump = 4;
+#define I2C_ADDR    0x27 
+#define BACKLIGHT_PIN     3
+#define En_pin  2
+#define Rw_pin  1
+#define Rs_pin  0
+#define D4_pin  4
+#define D5_pin  5
+#define D6_pin  6
+#define D7_pin  7
+#define DS3231_I2C_ADDRESS 0x68
+LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 RTC_DS3231 rtc;
 int INTERRUPT_PIN = 22;
 volatile int state = LOW;
-
 const char *string_table[] =
 {   
   "   Sleeping",
