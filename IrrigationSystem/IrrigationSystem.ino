@@ -8,6 +8,59 @@
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 
+#define I2C_ADDR    0x27 
+#define BACKLIGHT_PIN     3
+#define En_pin  2
+#define Rw_pin  1
+#define Rs_pin  0
+#define D4_pin  4
+#define D5_pin  5
+#define D6_pin  6
+#define D7_pin  7
+#define DS3231_I2C_ADDRESS 0x68
+
+const byte MoistureLevel1 = 15;
+const byte MoistureLevel2 = 20;
+const byte MoistureLevel3 = 25;
+const byte MoistureLevel4 = 30;
+const byte MoistureLevel5 = 35;
+const byte MoistureLevel6 = 40;
+const byte MoistureLevel7 = 45;
+const byte MoistureLevel8 = 50;
+const byte MoistureLevel9 = 55;
+const byte MoistureLevel0 = 60;
+
+const unsigned long Delay1 = 10000;
+const unsigned long Delay2 = 20000;
+const unsigned long Delay3 = 30000;
+const unsigned long Delay4 = 40000;
+const unsigned long Delay5 = 50000;
+const unsigned long sysDelay = 1500;
+const unsigned long LCDDelay = 6000;
+unsigned long previousTime = 0;
+unsigned long currentTime;
+unsigned long interval = 3000;
+
+const byte Time1 = 8;
+const byte Time2 = 17;
+const byte Time3 = 25;
+const byte Time4 = 25;
+const byte Time5 = 25;
+const byte TimeMin = 1;
+
+const unsigned long zone1RunTime = Delay1;
+const unsigned long zone2RunTime = Delay1;
+const unsigned long zone3RunTime = Delay1;
+const unsigned long zone4RunTime = Delay1;
+
+const byte zone1MoistureLevel = MoistureLevel8;
+const byte zone2MoistureLevel = MoistureLevel8;
+const byte zone3MoistureLevel = MoistureLevel8;
+const byte zone4MoistureLevel = MoistureLevel8;
+
+LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
+RTC_DS3231 rtc;
+
 const char *string_table[] =
 {   
   "   Sleeping",
@@ -21,240 +74,193 @@ const char *string_table[] =
   "   Test Mode    ",
   " Manual Run Mode",
   "System Starting",
-  "YES",
+  " Automatic Run  ",
+  "Stopping Pump",
   "NO",
   "Interrupt",
   };
 
 
-/*Start of User Defined Settings
+/*
+-Read Sensors
+-Control Resevoir Pump
+-Control Circulation Pump
+-Control Solenoid 1
+-Control Button 2
+* -Manual Water
+* -Short Press Test and water
+* -Long Press Manual Water for length of button press
+-Set Date & Time
+-Control LCD
+* -Watering Zone 1
+* -Watering Zone 2
+* -Watering Zone 3
+* -Watering Zone 4 
+**
+**
+-RTC Alarm
+-Sleep
 */
-// Time1-5 are the hours for program to run (Sensors and watering)
-int Time1 = 8;
-int Time2 = 14;
-int Time3 = 0;
-int Time4 = 88;
-int Time5 = 88;
-// TimeMin is the minute on the hour for program to run.
-int TimeMin = 30;
-// Water levels are soil moisture settings in percent. So if the moisture in the soil reads less than WaterLevel
-// then the program wil run.
-int WaterLevel_1 = 60;
-int WaterLevel_2 = 60;
-int WaterLevel_3 = 60;
-int WaterLevel_4 = 60;
-int WaterLevel_5 = 60;
-// Watering run time's in milliseconds so 1000 is 1sec and 30000 is 30sec.
-int Delay1 = 10000; // 10seconds
-int Delay2 = 20000; // 20seconds
-int Delay3 = 30000; // 30seconds
-int Delay4 = 60000; // 60seconds
-int Delay5 = 3000000; // 5mins - Used For Refilling Resevoir 
-// ZoneSettings------
-/* Only user serviceable settings are
-   -Zone*Delay = Watering time, Link to Delays above - can be added together using ( brackets) like (Delay2 + Delay3) would give a run
-   -- time of 50seconds.
-   -Zone*WaterLevel = Moisture Level you want the zone set to, link to WaterLevels above
-*/
-int Zone1Solenoid = 50;
-int Zone1Sensors[] = {A12, A8};
-int Zone1Delay = Delay3;
-int Zone1SensorValue;
-String Zone1Water;
-int Zone1WaterLevel= WaterLevel_1;
-int Zone2Solenoid = 48;
-int Zone2Sensors[] = {A13, A9};
-int Zone2Delay = Delay3;
-int Zone2SensorValue;
-String Zone2Water;
-int Zone2WaterLevel = WaterLevel_1;
-int Zone3Solenoid = 44;
-int Zone3Sensors[] = {A14, A10};
-int Zone3Delay = Delay3;
-int Zone3SensorValue;
-String Zone3Water;
-int Zone3WaterLevel = WaterLevel_1;
-int Zone4Solenoid = 46;
-int Zone4Sensors[] = {A15, A11};
-int Zone4Delay = Delay3;
-int Zone4SensorValue;
-String Zone4Water;
-int Zone4WaterLevel = WaterLevel_1;
 
-// End Of User Settings
+const byte testButton = 19;
+const byte waterButton = 18;
+const byte resevoirPump = 4;
+const byte circulationPump = 5;
+const byte solenoidZone1 = 50;
+const byte solenoidZone2 = 48;
+const byte solenoidZone3 = 46;
+const byte solenoidZone4 = 44;
+const byte zone1sensor1 = 12; 
+const byte zone1sensor2 = 8; 
+const byte zone2sensor1 = 13;
+const byte zone2sensor2 = 9; 
+const byte zone3sensor1 = 14;
+const byte zone3sensor2 = 10; 
+const byte zone4sensor1 = 15;
+const byte zone4sensor2 = 11; 
+int zone1Sensor1Value;
+int zone1Sensor2Value;
+int zone2Sensor1Value;
+int zone2Sensor2Value;
+int zone3Sensor1Value;
+int zone3Sensor2Value;
+int zone4Sensor1Value;
+int zone4Sensor2Value;
+int zone1Soil1;
+int zone1Soil2;
+int zone2Soil1;
+int zone2Soil2;
+int zone3Soil1;
+int zone3Soil2;
+int zone4Soil1;
+int zone4Soil2;
+int zone1Reading;
+int zone2Reading;
+int zone3Reading;
+int zone4Reading;
+volatile byte timeHour;
+volatile byte timeMinute;
+volatile bool zone1Run = false;
+volatile bool zone2Run = false;
+volatile bool zone3Run = false;
+volatile bool zone4Run = false;
+volatile bool testModeRun = false;
+volatile bool waterModeRun = false;
+const unsigned long systemStart = millis();
+volatile bool startUp = true;
+volatile bool systemRun = false;
+volatile bool scheduleRun = false;
+volatile bool pumpRun = false;
+volatile bool wateringRoutine = false;
+volatile bool waterRun = false;
+volatile bool LCDRefresh = false;
 
-int programDelay = 100;
-int n = 1;
-int solenoid;
-String water_info;
-int delay_time;
-int soil1;
-int soil2; 
-int SensorCount = 2;
-int CirculationPump = 5;
-int ResevoirPump = 4;
-//volatile int buttonstate = HIGH;
-#define I2C_ADDR    0x27 
-#define BACKLIGHT_PIN     3
-#define En_pin  2
-#define Rw_pin  1
-#define Rs_pin  0
-#define D4_pin  4
-#define D5_pin  5
-#define D6_pin  6
-#define D7_pin  7
-//int TEST_BUTTON = 19;
-//int WATER_BUTTON = 18;
-#define DS3231_I2C_ADDRESS 0x68
-LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
-RTC_DS3231 rtc;
-int INTERRUPT_PIN = 22;
-volatile int state = LOW;
-
-byte decToBcd(byte val)
-{
+byte decToBcd(byte val) {
   return( (val/10*16) + (val%10) );
 }
-// Convert binary coded decimal to normal decimal numbers
-byte bcdToDec(byte val)
-{
+byte bcdToDec(byte val) {
   return( (val/16*10) + (val%16) );
 }
 
-void setup () {
-  // Set Time (sec,min,hour,day,date,mon,yr)
-  //setDS3231time(00,22,18,5,21,04,16); // Set time
-  pinMode(INTERRUPT_PIN, INPUT_PULLUP); 
-  pinMode(CirculationPump, OUTPUT);
-  pinMode(ResevoirPump, OUTPUT);
-  pinMode(Zone1Solenoid, OUTPUT);
-  pinMode(Zone2Solenoid, OUTPUT);
-  pinMode(Zone3Solenoid, OUTPUT);
-  pinMode(Zone4Solenoid, OUTPUT);
-//  pinMode(TEST_BUTTON, INPUT);
-//  pinMode(WATER_BUTTON, INPUT); 
-  digitalWrite(Zone1Solenoid, HIGH);
-  digitalWrite(Zone2Solenoid, HIGH);
-  digitalWrite(Zone3Solenoid, HIGH);
-  digitalWrite(Zone4Solenoid, HIGH); 
-  attachInterrupt(19, pin_READ, CHANGE);
-  attachInterrupt(18, pin_WATER, CHANGE); 
-  Wire.begin();
-  rtc.begin();
-  lcd.begin (16,2); 
-  lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
-  lcd.setBacklight(HIGH);
-  lcd.home ();
-  lcd.print(string_table[10]);
-  Serial.begin(57600);
-  };
 
-void pin_READ() {
-//  buttonstate = digitalRead(TEST_BUTTON);
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(string_table[8]);
-  delay(Delay3);
-  read_sensors();
-};
-
-void pin_WATER() {
-//  buttonstate = digitalRead(WATER_BUTTON);
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(string_table[9]);
-  delay(Delay3);
-  water_run();
-};
-
-void program() {
-  DateTime tt = rtc.now();
-  int tthour = tt.hour();
-  int ttmin = tt.minute();
-  Serial.print(tt.hour(), DEC);
-  Serial.print(':');
-  Serial.print(tt.minute(), DEC);
-  Serial.print(':');
-  Serial.println(tt.second(), DEC);
-  if ((tthour == Time1 || Time2 || Time3 || Time4 || Time5 ) and ttmin == TimeMin ){
-    water_run();
+// System Functions ------
+void readSensors() {
+    zone1Sensor1Value = analogRead(zone1sensor1);
+    zone1Sensor2Value = analogRead(zone1sensor2);
+    zone2Sensor1Value = analogRead(zone2sensor1);
+    zone2Sensor2Value = analogRead(zone2sensor2);
+    zone3Sensor1Value = analogRead(zone3sensor1);
+    zone3Sensor2Value = analogRead(zone3sensor2);
+    zone4Sensor1Value = analogRead(zone3sensor1);
+    zone4Sensor2Value = analogRead(zone3sensor2);
+    zone1Sensor1Value = constrain(zone1Sensor1Value, 485, 1023);
+    zone1Sensor2Value = constrain(zone1Sensor2Value, 485, 1023);
+    zone2Sensor1Value = constrain(zone2Sensor1Value, 485, 1023);
+    zone2Sensor2Value = constrain(zone2Sensor2Value, 485, 1023);
+    zone3Sensor1Value = constrain(zone3Sensor1Value, 485, 1023);
+    zone3Sensor2Value = constrain(zone3Sensor2Value, 485, 1023);
+    zone4Sensor1Value = constrain(zone4Sensor1Value, 485, 1023);
+    zone4Sensor2Value = constrain(zone4Sensor2Value, 485, 1023);
+    zone1Soil1 = map(zone1Sensor1Value, 485, 1023, 100, 0);
+    zone1Soil2 = map(zone1Sensor2Value, 485, 1023, 100, 0);
+    zone2Soil1 = map(zone2Sensor1Value, 485, 1023, 100, 0);
+    zone2Soil2 = map(zone2Sensor2Value, 485, 1023, 100, 0);
+    zone3Soil1 = map(zone3Sensor1Value, 485, 1023, 100, 0);
+    zone3Soil2 = map(zone3Sensor2Value, 485, 1023, 100, 0);
+    zone4Soil1 = map(zone4Sensor1Value, 485, 1023, 100, 0);
+    zone4Soil2 = map(zone4Sensor2Value, 485, 1023, 100, 0);
+    zone1Reading = (zone1Soil1 + zone1Soil2)/2;
+    zone2Reading = (zone2Soil1 + zone2Soil2)/2;
+    zone3Reading = (zone3Soil1 + zone3Soil2)/2;
+    zone4Reading = (zone4Soil1 + zone4Soil2)/2;
+    }
+void circulationPumpOn() {
+  digitalWrite(circulationPump, HIGH);
   }
-  else {
-  lcd_time(),
-  lcd.print(string_table[0]),
-  Serial.flush();
-  } 
-  };
+void circulationPumpOff() {
+  digitalWrite(resevoirPump, LOW);
+  }
+void resevoirPumpOn() {
+  digitalWrite(resevoirPump, HIGH);
+  }
+void resevoirPumpOff() {
+  digitalWrite(resevoirPump, LOW);
+  }
+void solenoid1On() {
+  digitalWrite(solenoidZone1, LOW);
+  }
+void solenoid1Off() {
+  digitalWrite(solenoidZone1, HIGH);
+  }
+void solenoid2On() {
+  digitalWrite(solenoidZone2, LOW);
+  }
+void solenoid2Off() {
+  digitalWrite(solenoidZone2, HIGH);
+  }
+void solenoid3On() {
+  digitalWrite(solenoidZone3, LOW);
+  }
+void solenoid3Off() {
+  digitalWrite(solenoidZone3, HIGH);
+  }
+void solenoid4On() {
+  digitalWrite(solenoidZone4, LOW);
+  }
+void solenoid4Off() {
+  digitalWrite(solenoidZone4, HIGH);
+  }
 
-void water_run(){
-    read_sensors();
+// ISR ----------
+void testButton_ISR() {
+    testModeRun = true;
+    LCDRefresh = true;
+}
+void waterButton_ISR(){ 
+    waterModeRun = true;
+    LCDRefresh = true;
+}
+
+// Routines
+
+// LCD Functions
+void lcdInfoLine1(String info){
+  lcd.setCursor(0,0);
+  lcd.print(info);
+}
+void lcdInfoLine2(String info){
+  lcd.setCursor(0,1);
+  lcd.print(info);
+}
+void lcdSystemInfo(String info){
+    lcd.print(info);
+}
+void lcdSystemStart() {
     lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print(string_table[7]);
-    if (Zone1SensorValue <= Zone1WaterLevel ) {
-      Zone1Water = String(string_table[11]);
-      Serial.println(Zone1Water);
-    };
-    if (Zone2SensorValue <= Zone2WaterLevel ) {
-      Zone2Water = String(string_table[11]);
-      Serial.println(Zone2Water);
-    };
-    if (Zone3SensorValue <= Zone3WaterLevel ) {
-      Zone3Water = String(string_table[11]);
-      Serial.println(Zone3Water);
-    };
-    if (Zone4SensorValue <= Zone4WaterLevel ) {
-      Zone4Water = String(string_table[11]);
-      Serial.println(Zone4Water);
-    };
-    if (Zone1Water || Zone2Water || Zone3Water || Zone4Water == String(string_table[11])){
-      digitalWrite(CirculationPump, HIGH);
-      delay(1500);
-    };
-    if (Zone1Water == String(string_table[11])){
-      Serial.println(Zone1Water),
-      delay_time = Zone1Delay,
-      solenoid = Zone1Solenoid,
-      water_info = string_table[3], 
-      water_routine(); 
-    };
-    if (Zone2Water == String(string_table[11])){
-      delay_time = Zone2Delay,
-      solenoid = Zone2Solenoid,
-      water_info = string_table[4],
-      water_routine();  
-    };
-    if (Zone3Water == String(string_table[11])){
-      delay_time = Zone3Delay,
-      solenoid = Zone3Solenoid,
-      water_info = string_table[5],
-      water_routine();  
-    };
-    if (Zone4Water == String(string_table[11])){
-      delay_time = Zone4Delay,
-      solenoid = Zone4Solenoid,
-      water_info = string_table[6],
-      water_routine();  
-    }; 
-    digitalWrite(CirculationPump, LOW);
-    Zone1Water = String(string_table[12]);
-    Zone2Water = String(string_table[12]);
-    Zone3Water = String(string_table[12]);
-    Zone4Water = String(string_table[12]);
-};
-
-void water_routine() {
-  Serial.println("YES");
-  lcd_time(),
-  lcd.print(string_table[1]),
-  digitalWrite(solenoid, LOW),
-  lcd.setCursor(0,1),
-  lcd.print(water_info);
-  delay(delay_time),
-  digitalWrite(solenoid, HIGH);
-};
-    
-void lcd_time() {
+    lcd.print(string_table[10]);
+}
+void lcdTime() {
     DateTime tt = rtc.now();
     int tthour = tt.hour();
     int ttmin = tt.minute();
@@ -265,7 +271,7 @@ void lcd_time() {
       lcd.print(tt.hour(), DEC);
     else
       lcd.print(tt.hour(), DEC);
-    lcd.print(':');
+      lcd.print(':');
     if (tt.minute() < 10)
       lcd.print("0"),
       lcd.print(tt.minute(), DEC);
@@ -273,93 +279,44 @@ void lcd_time() {
       lcd.print(tt.minute(), DEC);
     
 };
-
-void read_sensors()  {
-    int Zone1Sensor1Value = analogRead(Zone1Sensors[0]);
-    Zone1Sensor1Value = constrain(Zone1Sensor1Value, 485, 1023);
-    int Zone1Sensor2Value = analogRead(Zone1Sensors[1]);
-    Zone1Sensor2Value = constrain(Zone1Sensor2Value, 485, 1023);
-    soil1 = map(Zone1Sensor1Value, 485, 1023, 100, 0);
-    Serial.println("///---------------------Zone 1");
-    Serial.println("Sensor 1 Value ");
-    Serial.print(soil1);
-    Serial.println("%");
-    soil2 = map(Zone1Sensor2Value, 485, 1023, 100, 0);
-    Serial.println("Sensor 2 Value ");
-    Serial.print(soil2);
-    Serial.println("%");
-    Zone1Sensor1Value = soil1;
-    Zone1Sensor2Value = soil2;
-    Zone1SensorValue = (soil1 + soil2) / 2;
-    int Zone2Sensor1Value = analogRead(Zone2Sensors[0]);
-    Zone2Sensor1Value = constrain(Zone2Sensor1Value, 485, 1023);
-    int Zone2Sensor2Value = analogRead(Zone2Sensors[1]);
-    Zone2Sensor2Value = constrain(Zone2Sensor2Value, 485, 1023);
-    soil1 = map(Zone2Sensor1Value, 485, 1023, 100, 0);
-    Serial.println("///---------------------Zone 2");
-    Serial.println("Sensor 1 Value ");
-    Serial.print(soil1);
-    Serial.println("%");
-    soil2 = map(Zone2Sensor2Value, 485, 1023, 100, 0);
-    Serial.println("Sensor 2 Value ");
-    Serial.print(soil2);
-    Serial.println("%");
-    Zone2Sensor1Value = soil1;
-    Zone2Sensor2Value = soil2;
-    Zone2SensorValue = (soil1 + soil2) / 2;
-    int Zone3Sensor1Value = analogRead(Zone3Sensors[0]);
-    Zone3Sensor1Value = constrain(Zone3Sensor1Value, 485, 1023);
-    int Zone3Sensor2Value = analogRead(Zone3Sensors[1]);
-    Zone3Sensor2Value = constrain(Zone3Sensor2Value, 485, 1023);
-    soil1 = map(Zone3Sensor1Value, 485, 1023, 100, 0);
-    Serial.println("///---------------------Zone 3");
-    Serial.println("Sensor 1 Value ");
-    Serial.print(soil1);
-    Serial.println("%");
-    soil2 = map(Zone3Sensor2Value, 485, 1023, 100, 0);
-    Serial.println("Sensor 2 Value ");
-    Serial.print(soil2);
-    Serial.println("%");
-    Zone3Sensor1Value = soil1;
-    Zone3Sensor2Value = soil2;
-    Zone3SensorValue = (soil1 + soil2) / 2;
-    int Zone4Sensor1Value = analogRead(Zone4Sensors[0]);
-    Zone4Sensor1Value = constrain(Zone4Sensor1Value, 485, 1023);
-    int Zone4Sensor2Value = analogRead(Zone4Sensors[1]);
-    Zone4Sensor2Value = constrain(Zone4Sensor2Value, 485, 1023);
-    soil1 = map(Zone4Sensor1Value, 485, 1023, 100, 0);
-    Serial.println("///---------------------Zone 4");
-    Serial.println("Sensor 1 Value ");
-    Serial.print(soil1);
-    Serial.println("%");
-    soil2 = map(Zone4Sensor2Value, 485, 1023, 100, 0);
-    Serial.println("Sensor 2 Value ");
-    Serial.print(soil2);
-    Serial.println("%");
-    Zone4Sensor1Value = soil1;
-    Zone4Sensor2Value = soil2;
-    Zone4SensorValue = (soil1 + soil2) / 2;
-    lcd_time();
+void lcdDisplaySensors() {
+    lcdTime();
     lcd.print(string_table[2]);
     lcd.setCursor(0,1);
-    lcd.print(int (Zone1SensorValue));
+    lcd.print(int (zone1Reading));
     lcd.print("%");
     lcd.setCursor(4,1);
-    lcd.print(Zone2SensorValue);
+    lcd.print(zone2Reading);
     lcd.print("%");
     lcd.setCursor(8,1);
-    lcd.print(Zone3SensorValue);
+    lcd.print(zone3Reading);
     lcd.print("%");
     lcd.setCursor(12,1);
-    lcd.print(Zone4SensorValue);
+    lcd.print(zone4Reading);
     lcd.print("%");
-    delay(5000);
-    
-    };
+    }
+void testModeScreen() {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(string_table[8]);
+    LCDRefresh = false;
+}
+void waterModeScreen() {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(string_table[9]);
+    LCDRefresh = false;
+}
+void automaticModeScreen() {
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(string_table[11]);
+    LCDRefresh = false;
+}
 
+// Date Functions
 void setDS3231time(byte second, byte minute, byte hour, byte dayOfWeek, byte
-dayOfMonth, byte month, byte year)
-{
+dayOfMonth, byte month, byte year){
   // sets time and date data to DS3231
   Wire.beginTransmission(DS3231_I2C_ADDRESS);
   Wire.write(0); // set next input to start at the seconds register
@@ -372,110 +329,204 @@ dayOfMonth, byte month, byte year)
   Wire.write(decToBcd(year)); // set year (0 to 99)
   Wire.endTransmission();
 };
-void readDS3231time(byte *second,
-byte *minute,
-byte *hour,
-byte *dayOfWeek,
-byte *dayOfMonth,
-byte *month,
-byte *year)
-{
-  Wire.beginTransmission(DS3231_I2C_ADDRESS);
-  Wire.write(0); // set DS3231 register pointer to 00h
-  Wire.endTransmission();
-  Wire.requestFrom(DS3231_I2C_ADDRESS, 7);
-  // request seven bytes of data from DS3231 starting from register 00h
-  *second = bcdToDec(Wire.read() & 0x7f);
-  *minute = bcdToDec(Wire.read());
-  *hour = bcdToDec(Wire.read() & 0x3f);
-  *dayOfWeek = bcdToDec(Wire.read());
-  *dayOfMonth = bcdToDec(Wire.read());
-  *month = bcdToDec(Wire.read());
-  *year = bcdToDec(Wire.read());
-};
 
-void displayTime()
-{
-  byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-  // retrieve data from DS3231
-  readDS3231time(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month,
-  &year);
-  // send it to the serial monitor
-  Serial.print(hour, DEC);
-  // convert the byte variable to a decimal number when displayed
-  Serial.print(":");
-  if (minute<10)
-  {
-    Serial.print("0");
-  }
-  Serial.print(minute, DEC);
-  Serial.print(":");
-  if (second<10)
-  {
-    Serial.print("0");
-  }
-  Serial.print(second, DEC);
-  Serial.print(" ");
-  Serial.print(dayOfMonth, DEC);
-  Serial.print("/");
-  Serial.print(month, DEC);
-  Serial.print("/");
-  Serial.print(year, DEC);
-  Serial.print(" Day of week: ");
-  switch(dayOfWeek){
-  case 1:
-    Serial.println("Sunday");
-    break;
-  case 2:
-    Serial.println("Monday");
-    break;
-  case 3:
-    Serial.println("Tuesday");
-    break;
-  case 4:
-    Serial.println("Wednesday");
-    break;
-  case 5:
-    Serial.println("Thursday");
-    break;
-  case 6:
-    Serial.println("Friday");
-    break;
-  case 7:
-    Serial.println("Saturday");
-    break;
-  }
-};
-    
-void testSolenoids() {
-    digitalWrite(Zone1Solenoid, LOW);
-    Serial.println("Zone 1 On");
-    delay(1000);
-    digitalWrite(Zone1Solenoid, HIGH);
-    Serial.println("Zone 1 Off");
-    delay(1000);
-    digitalWrite(Zone2Solenoid, LOW);
-    Serial.println("Zone 2 On");
-    delay(1000);
-    digitalWrite(Zone2Solenoid, HIGH);
-    Serial.println("Zone 2 Off");    
-    delay(1000);
-    digitalWrite(Zone3Solenoid, LOW);
-    Serial.println("Zone 3 On");    
-    delay(1000);
-    digitalWrite(Zone3Solenoid, HIGH);
-    Serial.println("Zone 3 Off");
-    delay(1000);
-    digitalWrite(Zone4Solenoid, LOW);
-    Serial.println("Zone 4 On");
-    delay(1000);
-    digitalWrite(Zone4Solenoid, HIGH);
-    Serial.println("Zone 4 Off");
-    delay(1000);
-};
+void setup() {
+  pinMode(testButton, INPUT_PULLUP);
+  pinMode(waterButton, INPUT_PULLUP);
+  pinMode(solenoidZone1, OUTPUT);
+  pinMode(solenoidZone2, OUTPUT);
+  pinMode(solenoidZone3, OUTPUT);
+  pinMode(solenoidZone4, OUTPUT);
+  pinMode(circulationPump, OUTPUT);
+  pinMode(resevoirPump, OUTPUT);
+  digitalWrite(solenoidZone1, HIGH);
+  digitalWrite(solenoidZone2, HIGH);
+  digitalWrite(solenoidZone3, HIGH);
+  digitalWrite(solenoidZone4, HIGH);
+  Wire.begin();
+  rtc.begin();
+  lcd.begin (16, 2);
+  lcd.setBacklightPin(BACKLIGHT_PIN, POSITIVE);
+  lcd.setBacklight(HIGH);
+  lcd.home ();
+  attachInterrupt(digitalPinToInterrupt(testButton), testButton_ISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(waterButton), waterButton_ISR, FALLING);
+  Serial.begin(57600);
+  previousTime = millis();
+  lcdSystemStart();
+}
 
-void loop(){
-  delay(programDelay);
-  program();
-  };
+void loop() {
+  currentTime = millis();
+  DateTime tt = rtc.now();
+  timeHour = tt.hour();
+  timeMinute = tt.minute();
+  if(((timeHour = Time1) || (timeHour = Time2) || (timeHour = Time3) || (timeHour = Time4) || (timeHour = Time5)) && (timeMinute == TimeMin)) {
+    scheduleRun = true;
+  }
+  if (testModeRun) {
+    if (LCDRefresh) {
+      testModeScreen();
+      previousTime = currentTime;
+    }
+    if (currentTime - previousTime >= 3000) {
+      readSensors();
+      lcdDisplaySensors();
+      previousTime = currentTime;
+      testModeRun = false;
+    }
+  }
+  if (waterModeRun){
+     if (LCDRefresh) {
+      waterModeScreen();
+      previousTime = currentTime;
+    }
+    if(currentTime - previousTime >= 3000) {
+      if(zone1Reading <= zone1MoistureLevel){
+        zone1Run = true;
+      }
+      if(zone2Reading <= zone2MoistureLevel){
+        zone2Run = true;
+      }
+      if(zone3Reading <= zone3MoistureLevel){
+        zone3Run = true;
+      }
+      if(zone4Reading <= zone4MoistureLevel){
+        zone4Run = true;
+      }
+      if((zone1Run) || (zone2Run) || (zone3Run) || (zone4Run)) {
+        waterRun = true;
+      }
+      waterModeRun = false;
+      LCDRefresh = true;
+      previousTime = currentTime;
+      readSensors();
+      lcdDisplaySensors();
+    }
+  }
   
+  if(waterRun) {
+    int circulationPumpPin = digitalRead(circulationPump);
+    if(currentTime - previousTime >= 3000) {
+      if(pumpRun == false)  {
+        circulationPumpOn();
+        if(LCDRefresh) {
+          lcd.clear();
+          lcdInfoLine1(string_table[7]);
+          LCDRefresh = false; 
+        }       
+        if(currentTime - previousTime >= 4500) {
+          pumpRun = true;
+          waterRun = false;
+          LCDRefresh = true;
+        }
+      }
+    }
+  }
+  if(pumpRun) {
+    int solenoidPin;
+    if(zone1Run) {
+      solenoidPin = digitalRead(solenoidZone1);
+      if(LCDRefresh) {
+        lcd.clear();
+        lcdInfoLine1(string_table[1]);
+        lcdInfoLine2(string_table[3]);
+        LCDRefresh = false;
+        previousTime = currentTime;
+      }
+      if(solenoidPin == HIGH) {
+        solenoid1On();
+      }
+      if(currentTime - previousTime >= zone1RunTime) { 
+        solenoid1Off();
+        zone1Run = false;
+        LCDRefresh = true;
+      }
+    }
+    if((zone2Run) &~ (zone1Run)) {
+      solenoidPin = digitalRead(solenoidZone2);
+      if(LCDRefresh) {
+        lcd.clear();
+        lcdInfoLine1(string_table[1]);
+        lcdInfoLine2(string_table[4]);
+        LCDRefresh = false;
+        previousTime = currentTime;
+      }
+      if(solenoidPin == HIGH) {
+        solenoid2On();
+      }
+      if(currentTime - previousTime >= zone2RunTime) { 
+        solenoid2Off();
+        zone2Run = false;
+        LCDRefresh = true;
+      }
+    }
+    if((zone3Run) &~ (zone2Run)) {
+      solenoidPin = digitalRead(solenoidZone3);
+      if(LCDRefresh) {
+        lcd.clear();
+        lcdInfoLine1(string_table[1]);
+        lcdInfoLine2(string_table[5]);
+        LCDRefresh = false;
+        previousTime = currentTime;
+      }
+      if(solenoidPin == HIGH) {
+        solenoid3On();
+      }
+      if(currentTime - previousTime >= zone3RunTime) { 
+        solenoid3Off();
+        zone3Run = false;
+        LCDRefresh = true;
+      }
+    }
+    if((zone4Run) &~ (zone3Run)) {
+      solenoidPin = digitalRead(solenoidZone3);
+      if(LCDRefresh) {
+        lcd.clear();
+        lcdInfoLine1(string_table[1]);
+        lcdInfoLine2(string_table[6]);
+        LCDRefresh = false;
+        previousTime = currentTime;
+      }
+      if(solenoidPin == HIGH) {
+        solenoid4On();
+      }
+      if(currentTime - previousTime >= zone4RunTime) { 
+        solenoid4Off();
+        zone4Run = false;
+        LCDRefresh = true;
+      }
+    }
+    if((pumpRun) &~ (zone4Run)) {
+      if(LCDRefresh) {
+        lcd.clear();
+        lcdInfoLine1(string_table[12]);
+        previousTime = currentTime;
+        circulationPumpOff();
+        LCDRefresh = false;
+      }
+      if(currentTime - previousTime >= 2000) {
+        pumpRun = false;
+        zone1Run = false;
+        zone2Run = false;
+        zone3Run = false;
+        zone4Run = false;
+        previousTime = currentTime;
+        lcdTime();
+        lcdSystemInfo(string_table[0]);
+      }
+    }
+  }
+  if((currentTime - systemStart >= 1500) && (startUp)){
+    lcd.clear();
+    lcdTime();
+    lcdSystemInfo(string_table[0]);
+    startUp = false;
+  }
+  else if (currentTime - previousTime >= 60000) {
+    previousTime = currentTime;
+    lcdTime();
+    lcdSystemInfo(string_table[0]);
+  }
+}
+
