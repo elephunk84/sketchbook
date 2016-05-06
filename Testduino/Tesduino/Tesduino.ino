@@ -17,6 +17,7 @@ volatile bool systemStart = true;
 unsigned long previousTime = 0;
 unsigned long currentTime;
 int n = 1;
+int pwmPin = 9;
 
 LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 
@@ -33,20 +34,11 @@ void lcdDisplay(){
     lcd.setCursor(0,1);
     lcd.print("Run Time = ");
     lcd.print(n);
-}
-void setup()
-{
-  lcd.begin (16,2);
-  lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
-  lcd.setBacklight(HIGH);
-  lcd.home ();
-  previousTime = millis(); 
-  Serial.begin(9600);
-  lcdSystemStart();
+    lcd.setCursor(0,3);
+    lcd.print("IainStott Systems");
 }
 
-void loop()
-{
+void normal_run(){
     currentTime = millis();
     if((currentTime - previousTime >= 1000) &! (systemStart)){
         lcdDisplay();
@@ -57,4 +49,36 @@ void loop()
         systemStart = false;
         previousTime = currentTime;
     }
+}
+
+void pwmLED() {
+    currentTime = millis();
+    digitalWrite(pwmPin, HIGH);
+    if((currentTime - previousTime >= 100) &! (systemStart)){
+        lcdDisplay();
+        digitalWrite(pwmPin, LOW);
+        previousTime = currentTime;
+    }
+    if((currentTime - previousTime >= 1000) &! (systemStart)){
+        n++;
+    }
+    if((systemStart) && (currentTime - previousTime >= 3000)){
+        systemStart = false;
+        previousTime = currentTime;
+    }
+}
+void setup()
+{
+  lcd.begin (20,4);
+  lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
+  lcd.setBacklight(HIGH);
+  lcd.home ();
+  previousTime = millis(); 
+  Serial.begin(9600);
+  lcdSystemStart();
+}
+
+void loop()
+{
+  normal_run();  
 }

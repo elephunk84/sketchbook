@@ -41,12 +41,17 @@ unsigned long previousTime = 0;
 unsigned long currentTime;
 unsigned long interval = 3000;
 
-const byte Time1 = 8;
+const byte Time1 = 11;
 const byte Time2 = 17;
 const byte Time3 = 25;
 const byte Time4 = 25;
 const byte Time5 = 25;
-const byte TimeMin = 1;
+const byte TimeMin = 27;
+
+bool zone1Active = true;
+bool zone2Active = true;
+bool zone3Active = true;
+bool zone4Active = true;
 
 const unsigned long zone1RunTime = Delay1;
 const unsigned long zone2RunTime = Delay1;
@@ -64,38 +69,30 @@ RTC_DS3231 rtc;
 const char *string_table[] =
 {   
   "   Sleeping",
-  "   Watering",
+  "    Watering",
   "    Testing",
-  " Zone 1 For 30s ",
-  " Zone 2 For 30s ",
-  " Zone 3 For 30s ",
-  " Zone 4 For 30s ",
+  "     Zone 1 ",
+  "     Zone 2",
+  "     Zone 3",
+  "     Zone 4",  
   "  Priming pump  ",
   "   Test Mode    ",
   " Manual Run Mode",
   "System Starting",
   " Automatic Run  ",
   "Stopping Pump",
-  "NO",
-  "Interrupt",
+  "  Water Critical",
+  "   Less than 1/2",
+  "More than 1/2",
+  "Full",
   };
 
 
 /*
 -Read Sensors
--Control Resevoir Pump
--Control Circulation Pump
--Control Solenoid 1
--Control Button 2
 * -Manual Water
 * -Short Press Test and water
 * -Long Press Manual Water for length of button press
--Set Date & Time
--Control LCD
-* -Watering Zone 1
-* -Watering Zone 2
-* -Watering Zone 3
-* -Watering Zone 4 
 **
 **
 -RTC Alarm
@@ -118,6 +115,8 @@ const byte zone3sensor1 = 14;
 const byte zone3sensor2 = 10; 
 const byte zone4sensor1 = 15;
 const byte zone4sensor2 = 11; 
+const byte waterSensorPins[] = {30,32,34};
+const byte sensorPins = 3;
 int zone1Sensor1Value;
 int zone1Sensor2Value;
 int zone2Sensor1Value;
@@ -140,6 +139,7 @@ int zone3Reading;
 int zone4Reading;
 volatile byte timeHour;
 volatile byte timeMinute;
+volatile byte timeSeconds;
 volatile bool zone1Run = false;
 volatile bool zone2Run = false;
 volatile bool zone3Run = false;
@@ -147,13 +147,17 @@ volatile bool zone4Run = false;
 volatile bool testModeRun = false;
 volatile bool waterModeRun = false;
 const unsigned long systemStart = millis();
+unsigned long lastUsed;
 volatile bool startUp = true;
-volatile bool systemRun = false;
+volatile bool sysRun = false;
 volatile bool scheduleRun = false;
 volatile bool pumpRun = false;
 volatile bool wateringRoutine = false;
 volatile bool waterRun = false;
 volatile bool LCDRefresh = false;
+volatile bool fillResevoir = false;
+int level = 0;
+String waterLevel;
 
 byte decToBcd(byte val) {
   return( (val/10*16) + (val%10) );
@@ -194,11 +198,48 @@ void readSensors() {
     zone3Reading = (zone3Soil1 + zone3Soil2)/2;
     zone4Reading = (zone4Soil1 + zone4Soil2)/2;
     }
+void readResvoir() {
+  if(digitalRead(waterSensorPins[0]) == LOW){
+    level = level +1;
+  }
+  if(digitalRead(waterSensorPins[1]) == LOW){
+    level = level +1;
+  }
+  if(digitalRead(waterSensorPins[2]) == LOW){
+    level = level +1;
+  }
+  switch(level) {
+    case 1:
+      waterLevel = (string_table[14]);
+      break;
+    case 2:
+      waterLevel = (string_table[15]);
+      break;
+    case 3:
+      waterLevel = (string_table[16]);
+      break;
+    default:
+      waterLevel = (string_table[13]);
+  } 
+  if(LCDRefresh){
+    lcd.clear();
+    lcdInfoLine1(waterLevel);
+    lcd.setCursor(0,1);
+    lcd.print(level);
+    LCDRefresh = false;
+    previousTime = currentTime;
+    level = 0;
+  }
+  if(currentTime - previousTime >= 3000){
+    previousTime = currentTime;
+    fillResevoir = false;
+    }
+}
 void circulationPumpOn() {
   digitalWrite(circulationPump, HIGH);
   }
 void circulationPumpOff() {
-  digitalWrite(resevoirPump, LOW);
+  digitalWrite(circulationPump, LOW);
   }
 void resevoirPumpOn() {
   digitalWrite(resevoirPump, HIGH);
@@ -233,7 +274,7 @@ void solenoid4Off() {
 
 // ISR ----------
 void testButton_ISR() {
-    testModeRun = true;
+    fillResevoir = true;
     LCDRefresh = true;
 }
 void waterButton_ISR(){ 
@@ -313,7 +354,12 @@ void automaticModeScreen() {
     lcd.print(string_table[11]);
     LCDRefresh = false;
 }
-
+void waterLevelScreen(String waterLevel) {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(waterLevel);
+  LCDRefresh = false;
+  }
 // Date Functions
 void setDS3231time(byte second, byte minute, byte hour, byte dayOfWeek, byte
 dayOfMonth, byte month, byte year){
@@ -333,6 +379,9 @@ dayOfMonth, byte month, byte year){
 void setup() {
   pinMode(testButton, INPUT_PULLUP);
   pinMode(waterButton, INPUT_PULLUP);
+  pinMode(waterSensorPins[0], INPUT_PULLUP);
+  pinMode(waterSensorPins[1], INPUT_PULLUP);
+  pinMode(waterSensorPins[2], INPUT_PULLUP);
   pinMode(solenoidZone1, OUTPUT);
   pinMode(solenoidZone2, OUTPUT);
   pinMode(solenoidZone3, OUTPUT);
@@ -353,6 +402,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(waterButton), waterButton_ISR, FALLING);
   Serial.begin(57600);
   previousTime = millis();
+  lastUsed = millis();
   lcdSystemStart();
 }
 
@@ -361,8 +411,14 @@ void loop() {
   DateTime tt = rtc.now();
   timeHour = tt.hour();
   timeMinute = tt.minute();
-  if(((timeHour = Time1) || (timeHour = Time2) || (timeHour = Time3) || (timeHour = Time4) || (timeHour = Time5)) && (timeMinute == TimeMin)) {
+  timeSeconds = tt.second();
+  if(fillResevoir){
+    readResvoir();
+    fillResevoir = false;
+  }
+  if(((timeHour = Time1) || (timeHour = Time2) || (timeHour = Time3) || (timeHour = Time4) || (timeHour = Time5)) && ((timeMinute == TimeMin) && (timeSeconds == 0))) {
     scheduleRun = true;
+    LCDRefresh = true;
   }
   if (testModeRun) {
     if (LCDRefresh) {
@@ -374,37 +430,62 @@ void loop() {
       lcdDisplaySensors();
       previousTime = currentTime;
       testModeRun = false;
+      lastUsed = millis();
     }
   }
   if (waterModeRun){
      if (LCDRefresh) {
       waterModeScreen();
       previousTime = currentTime;
+      sysRun = true;
+    }
+  }
+  if(scheduleRun){
+    if(LCDRefresh) {
+      automaticModeScreen();
+      previousTime = currentTime;
+      LCDRefresh = false;
     }
     if(currentTime - previousTime >= 3000) {
-      if(zone1Reading <= zone1MoistureLevel){
-        zone1Run = true;
+      scheduleRun = false;
+      sysRun = true;
+    }
+  }
+  if(sysRun) {
+    if(currentTime - previousTime >= 3000) {
+      if(zone1Active){
+        if(zone1Reading <= zone1MoistureLevel){
+          zone1Run = true;
+        }
       }
-      if(zone2Reading <= zone2MoistureLevel){
-        zone2Run = true;
+      if(zone2Active){
+        if(zone2Reading <= zone2MoistureLevel){
+          zone2Run = true;
+        }
       }
-      if(zone3Reading <= zone3MoistureLevel){
-        zone3Run = true;
+      if(zone3Active){
+        if(zone3Reading <= zone3MoistureLevel){
+          zone3Run = true;
+        }
       }
-      if(zone4Reading <= zone4MoistureLevel){
-        zone4Run = true;
+      if(zone4Active){
+        if(zone4Reading <= zone4MoistureLevel){
+          zone4Run = true;
+        }
       }
       if((zone1Run) || (zone2Run) || (zone3Run) || (zone4Run)) {
         waterRun = true;
       }
+      sysRun = false;
+      scheduleRun = false;
       waterModeRun = false;
       LCDRefresh = true;
       previousTime = currentTime;
       readSensors();
       lcdDisplaySensors();
+      lastUsed = millis();
     }
   }
-  
   if(waterRun) {
     int circulationPumpPin = digitalRead(circulationPump);
     if(currentTime - previousTime >= 3000) {
@@ -514,6 +595,7 @@ void loop() {
         previousTime = currentTime;
         lcdTime();
         lcdSystemInfo(string_table[0]);
+        lastUsed = millis();
       }
     }
   }
@@ -523,7 +605,7 @@ void loop() {
     lcdSystemInfo(string_table[0]);
     startUp = false;
   }
-  else if (currentTime - previousTime >= 60000) {
+  else if (currentTime - previousTime >= 10000) {
     previousTime = currentTime;
     lcdTime();
     lcdSystemInfo(string_table[0]);
