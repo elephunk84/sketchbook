@@ -4,8 +4,11 @@
 #include <LiquidCrystal_I2C.h>
 #include <DS3231.h>
 #include <MenuSystem.h>
+#include <Time.h>
 
-#define SLAVE_ADDRESS 0x04
+#define NANO_1_ADDRESS 0x04
+#define NANO_2_ADDRESS 0x05
+
 #define I2C_ADDR    0x27 // <<----- Add your address here.  Find it from I2C Scanner
 #define BACKLIGHT_PIN     3
 #define En_pin  2
@@ -16,12 +19,24 @@
 #define D6_pin  6
 #define D7_pin  7
 
-const byte upButtongh = 6;
-const byte enterButton = 7;
-const byte leftButton = 5;
-const byte rightButton = 4;
-const byte downButton = 3;
-const byte exitButton = 2;
+const byte bedLightsButton = 7;
+const byte iainLightsButton = 6;
+const byte eloraLightsButton = 5;
+const byte bedLightsPWM = 8;
+const byte iainLightsPWM = 9;
+const byte eloraLightsPWM = 10;
+int bedLightsVal = 0;
+int iainLightsVal = 0;
+int eloraLightsVal = 0;
+int bedLightsState = LOW;
+int iainLightsState = LOW;
+int eloraLightsState = LOW;
+int bedLightsReading;
+int iainLightsReading;
+int eloraLightsReading;
+int bedLightsPrevious = LOW;
+int iainLightsPrevious = LOW;
+int eloraLightsPrevious = LOW;
 
 volatile bool systemStart = true;
 unsigned long previousTime = 0;
@@ -29,11 +44,13 @@ unsigned long currentTime;
 String dow;
 String time;
 String date;
+long debounce_time = 0;
+long debounce = 200;
 
 int number = 0;
 int state = 0;
 
-LiquidCrystal_I2C	lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
+LiquidCrystal_I2C lcd(I2C_ADDR,En_pin,Rw_pin,Rs_pin,D4_pin,D5_pin,D6_pin,D7_pin);
 DS3231  rtc(SDA, SCL);
 
 void lcdSystemStart() {
@@ -47,6 +64,10 @@ void lcdDisplay(){
     lcd.setCursor(0,0);
     lcd.print("Bedroom Iain's Side");
     display_time();
+    lcd.setCursor(0,2);
+    //lcd.print("Runtime = ");
+    //lcd.setCursor(13,2);
+    //lcd.print(number);
     }
 
 void normal_run(){
@@ -54,6 +75,7 @@ void normal_run(){
     int analog_value = analogRead(A0);
     if((currentTime - previousTime >= 1000) &! (systemStart)){
         lcdDisplay();
+        number++;
         previousTime = currentTime;
     }
     if((systemStart) && (currentTime - previousTime >= 3000)){
@@ -63,53 +85,97 @@ void normal_run(){
 }
 
 void display_time(){
+  long time_now;
   dow = rtc.getDOWStr();
   date = rtc.getDateStr();
   time = rtc.getTimeStr();
   lcd.setCursor(0,1);
   lcd.print(date + "  ");
   lcd.print(time);
+  time_now = now();
+  run_time(time_now);
+  Serial.println(time);
 }
+void run_time(long val){  
+  int days = elapsedDays(val);
+  int hours = numberOfHours(val);
+  int minutes = numberOfMinutes(val);
+  int seconds = numberOfSeconds(val);
+  Serial.print(days,DEC);  
+  printDigits(hours);  
+  printDigits(minutes);
+  printDigits(seconds);
+  Serial.println();  
+}
+
+void printDigits(byte digits){
+ // utility function for digital clock display: prints colon and leading 0
+ Serial.print(":");
+ if(digits < 10)
+   Serial.print('0');
+ Serial.print(digits,DEC);  
+}
+
+void button_check(){
+  bedLightsReading = digitalRead(bedLightsButton);
+  if (bedLightsReading == HIGH && bedLightsPrevious == LOW && millis() - debounce_time > debounce) {
+    if (bedLightsState == HIGH)
+      bedLightsState = LOW;
+    else
+      bedLightsState = HIGH;
+    debounce_time = millis();    
+  }
+  digitalWrite(bedLightsPWM, bedLightsState);
+  bedLightsPrevious = bedLightsReading;  
+  iainLightsReading = digitalRead(iainLightsButton);
+  if (iainLightsReading == HIGH && iainLightsPrevious == LOW && millis() - debounce_time > debounce) {
+    if (iainLightsState == HIGH)
+      iainLightsState = LOW;
+    else
+      iainLightsState = HIGH;
+    debounce_time = millis();    
+  }
+  digitalWrite(iainLightsPWM, iainLightsState);
+  iainLightsPrevious = iainLightsReading;
+  eloraLightsReading = digitalRead(eloraLightsButton);
+  if (eloraLightsReading == HIGH && eloraLightsPrevious == LOW && millis() - debounce_time > debounce) {
+    if (eloraLightsState == HIGH)
+      eloraLightsState = LOW;
+    else
+      eloraLightsState = HIGH;
+    debounce_time = millis();    
+  }
+  digitalWrite(eloraLightsPWM, eloraLightsState);
+  eloraLightsPrevious = eloraLightsReading;
+}
+
 void setup(){
+  pinMode(bedLightsButton, INPUT_PULLUP);
+  pinMode(iainLightsButton, INPUT_PULLUP);
+  pinMode(eloraLightsButton, INPUT_PULLUP);
+  pinMode(bedLightsPWM, OUTPUT);
+  pinMode(iainLightsPWM, OUTPUT);
+  pinMode(eloraLightsPWM, OUTPUT);
   lcd.begin (20, 4);
   lcd.setBacklightPin(BACKLIGHT_PIN,POSITIVE);
-  lcd.setBacklight(HIGH);
+  lcd.setBacklight(160);
   lcd.home ();
   previousTime = millis(); 
   Serial.begin(9600);
   rtc.begin();
-  Wire.begin(SLAVE_ADDRESS);
-  Wire.onReceive(receiveData);
-  Wire.onRequest(sendData);
-  //rtc.setDOW(THURSDAY);     // Set Day-of-Week to SUNDAY
-  //rtc.setTime(21, 13, 0);     // Set the time to 12:00:00 (24hr format)
-  //rtc.setDate(19, 5, 2016);   // Set the date to January 1st, 2014
+  //rtc.setDOW(FRIDAY);     // Set Day-of-Week to SUNDAY
+  //rtc.setTime(18, 35, 00);     // Set the time to 12:00:00 (24hr format)
+  //rtc.setDate(27, 5, 2016);   // Set the date to January 1st, 2014
   lcdSystemStart();
 }
 
 void loop()
 {
-  normal_run(); 
-}
-
-void receiveData(int byteCount){
-  while(Wire.available()) {
-    number = Wire.read();
-    Serial.print("data received: ");
-    Serial.println(number);
-    if (number == 1){
-      if (state == 0){
-      digitalWrite(13, HIGH); // set the LED on
-      state = 1;
-      }
-    else{
-      digitalWrite(13, LOW); // set the LED off
-      state = 0;
-      }
-    }
+  char inByte = ' ';
+  if(Serial.available()){ // only send data back if data has been sent
+    char inByte = Serial.read(); // read the incoming data
+    Serial.println(inByte); // send the data back in a new line so that it is not all one long line
   }
-}
-
-void sendData(){
-  Wire.write(number);
+  normal_run(); 
+  button_check();
 }
