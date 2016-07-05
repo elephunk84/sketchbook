@@ -19,12 +19,12 @@
 #define D6_pin  6
 #define D7_pin  7
 
-const byte bedLightsButton = 7;
-const byte iainLightsButton = 6;
-const byte eloraLightsButton = 5;
-const byte bedLightsPWM = 8;
-const byte iainLightsPWM = 9;
-const byte eloraLightsPWM = 10;
+const byte bedLightsButton = 50;
+const byte iainLightsButton = 52;
+const byte eloraLightsButton = 54;
+const byte bedLightsPWM = 13;
+const byte iainLightsPWM = 12;
+const byte eloraLightsPWM = 11;
 int bedLightsVal = 0;
 int iainLightsVal = 0;
 int eloraLightsVal = 0;
