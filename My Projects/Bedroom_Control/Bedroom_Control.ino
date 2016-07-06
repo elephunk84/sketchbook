@@ -1,5 +1,5 @@
 /*Tesduino Script*/
-#include <Wire.h>
+#include <Wire.h>/tmp/buildf0f5612a78456c3e260f7c6ba47d8bf9.tmp/Bedroom_Control.ino.hex
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 #include <DS3231.h>
@@ -22,9 +22,9 @@
 const byte bedLightsButton = 50;
 const byte iainLightsButton = 52;
 const byte eloraLightsButton = 54;
-const byte bedLightsPWM = 13;
-const byte iainLightsPWM = 12;
-const byte eloraLightsPWM = 11;
+const byte bedLightsPWM = 8;
+const byte iainLightsPWM = 9;
+const byte eloraLightsPWM = 10;
 int bedLightsVal = 0;
 int iainLightsVal = 0;
 int eloraLightsVal = 0;
