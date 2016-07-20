@@ -19,7 +19,7 @@ print """
 Main Lights - 
 </h2>
 
-    <form action="./1.py" method="post" align="center">
+    <form action="python ./1.py" method="post" align="center">
     <button type="submit" name="advance" id="submit">Advance</button>
     </form>
     <h2 align="center">
