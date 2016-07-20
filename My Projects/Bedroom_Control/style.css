@@ -11,7 +11,7 @@
 #submit:hover {
  background: url('http://heating.iaincstott.co.uk/resources/images/advance_button_hover.png') 0 0 no-repeat;
 }
-#summer {
+#iainslights {
  color: #fff;
  font-size: 0;
  width: 135px;
@@ -21,7 +21,20 @@
  padding: 0;
  background: url('http://heating.iaincstott.co.uk/resources/images/advance_button_norm.png') 0 0 no-repeat; 
 }
-#summer:hover {
+#iainslights:hover {
+ background: url('http://heating.iaincstott.co.uk/resources/images/advance_button_hover.png') 0 0 no-repeat;
+}
+#eloraslights {
+ color: #fff;
+ font-size: 0;
+ width: 135px;
+ height: 60px;
+ border: none;
+ margin: 0;
+ padding: 0;
+ background: url('http://heating.iaincstott.co.uk/resources/images/advance_button_norm.png') 0 0 no-repeat; 
+}
+#eloraslights:hover {
  background: url('http://heating.iaincstott.co.uk/resources/images/advance_button_hover.png') 0 0 no-repeat;
 }
 h1

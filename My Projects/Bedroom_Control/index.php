@@ -1,7 +1,6 @@
 <html>
 
 <head>
-<meta http-equiv="refresh" content="10">
 <link rel="stylesheet" href="style.css">
 <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <title>IBedroom Lighting Controll</title>
@@ -9,37 +8,38 @@
 
 <body>
 <h2 align="center">
-Manual Override is - 
-
-    <?php
-    if (filesize("resources/status") <= 1 )
-    {
-    echo "OFF";
-    }
-    echo file_get_contents( "./resources/status" );
-    ?>
-
+Main Lights - 
 </h2>
 
     <?php
     if (isset($_POST['advance'])){
-	    exec('sh ./webadvance.sh');
+	    exec('python 1.py');
 	}
     ?>
     <form action="" method="post" align="center">
     <button type="submit" name="advance" id="submit">Advance</button>
     </form>
     <h2 align="center">
-    Summer Mode is - 
+    Iains Lights - 
     
     <?php
-    echo file_get_contents( "./resources/summer" );
-    if (isset($_POST['summer'])){
-	    exec('sh ./summermode.sh');
+    if (isset($_POST['iainslights'])){
+	    exec('python 2.py');
 	}
     ?>
     <form action="" method="post" align="center">
-    <button type="submit" name="summer" id="summer">Summer Mode</button>
+    <button type="submit" name="iainslights" id="iainslights">Iains Lights</button>
+    </form>
+    <h2 align="center">
+    Eloras Lights - 
+    
+    <?php
+    if (isset($_POST['eloraslights'])){
+	    exec('python 3,py');
+	}
+    ?>
+    <form action="" method="post" align="center">
+    <button type="submit" name="eloraslights" id="eloraslights">Eloras Lights</button>
     </form>
 
 </div>
