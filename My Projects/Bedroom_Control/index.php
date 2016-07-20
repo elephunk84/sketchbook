@@ -3,7 +3,7 @@
 <head>
 <link rel="stylesheet" href="style.css">
 <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-<title>Bedroom Lighting Control</title>
+<title>IBedroom Lighting Controll</title>
 </head>
 
 <body>
@@ -11,19 +11,34 @@
 Main Lights - 
 </h2>
 
-    <form action="./1.py" method="post" align="center">
+    <?php
+    if (isset($_POST['advance'])){
+	    exec('python /var/www/html/1.py');
+	}
+    ?>
+    <form action="" method="post" align="center">
     <button type="submit" name="advance" id="submit">Advance</button>
     </form>
     <h2 align="center">
     Iains Lights - 
     
-    <form action="./2.py" method="post" align="center">
+    <?php
+    if (isset($_POST['iainslights'])){
+	    exec('python /var/www/html/2.py');
+	}
+    ?>
+    <form action="" method="post" align="center">
     <button type="submit" name="iainslights" id="iainslights">Iains Lights</button>
     </form>
     <h2 align="center">
     Eloras Lights - 
     
-    <form action="./3.py" method="post" align="center">
+    <?php
+    if (isset($_POST['eloraslights'])){
+	    exec('python /var/www/html/3,py');
+	}
+    ?>
+    <form action="" method="post" align="center">
     <button type="submit" name="eloraslights" id="eloraslights">Eloras Lights</button>
     </form>
 
