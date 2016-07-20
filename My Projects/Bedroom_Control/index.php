@@ -35,7 +35,7 @@ Main Lights -
     
     <?php
     if (isset($_POST['eloraslights'])){
-	    exec('python /var/www/html/3,py');
+	    exec('python /var/www/html/3.py');
 	}
     ?>
     <form action="" method="post" align="center">
