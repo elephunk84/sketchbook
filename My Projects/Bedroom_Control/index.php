@@ -1,6 +1,4 @@
 <html>
 <h1>Test Page 1</h1>
-<form name="input" action="1.py" method="get">
-<input type="submit" value="Submit">
-</form>
-</html>
+<input type="button" name="runmyscript" value=" Run Python code " onClick="<? exec('python 1.py'); ?>">
+</body></html>
