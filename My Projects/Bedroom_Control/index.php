@@ -2,7 +2,7 @@
 
 <head>
 <meta http-equiv="refresh" content="10">
-<link rel="stylesheet" href="/resources/css/style.css">
+<link rel="stylesheet" href="style.css">
 <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <title>IBedroom Lighting Controll</title>
 </head>
