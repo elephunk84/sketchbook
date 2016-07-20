@@ -19,9 +19,9 @@
 #define D6_pin  6
 #define D7_pin  7
 
-const byte bedLightsButton = 50;
-const byte iainLightsButton = 52;
-const byte eloraLightsButton = 54;
+const byte bedLightsButton = 40;
+const byte iainLightsButton = 42;
+const byte eloraLightsButton = 44;
 const byte bedLightsPWM = 8;
 const byte iainLightsPWM = 9;
 const byte eloraLightsPWM = 10;
@@ -89,11 +89,6 @@ void display_time(){
   dow = rtc.getDOWStr();
   date = rtc.getDateStr();
   time = rtc.getTimeStr();
-  lcd.setCursor(0,1);
-  lcd.print(date + "  ");
-  lcd.print(time);
-  time_now = now();
-  run_time(time_now);
   Serial.println(time);
 }
 void run_time(long val){  
@@ -149,6 +144,35 @@ void button_check(){
   eloraLightsPrevious = eloraLightsReading;
 }
 
+void light(int n){
+  switch ( n ) {
+    case 1:
+    {
+      if (bedLightsState == HIGH)
+        bedLightsState = LOW;
+      else
+        bedLightsState = HIGH;
+      }
+      break;
+    case  2:
+    {
+     if (iainLightsState == HIGH)
+        iainLightsState = LOW;
+    else
+        iainLightsState = HIGH;
+      }
+      break;
+    case 3:
+    {
+     if (eloraLightsState == HIGH)
+      eloraLightsState = LOW;
+    else
+      eloraLightsState = HIGH;
+      }
+      break;
+    }
+  }
+    
 void setup(){
   pinMode(bedLightsButton, INPUT_PULLUP);
   pinMode(iainLightsButton, INPUT_PULLUP);
@@ -163,19 +187,16 @@ void setup(){
   previousTime = millis(); 
   Serial.begin(9600);
   rtc.begin();
-  //rtc.setDOW(FRIDAY);     // Set Day-of-Week to SUNDAY
-  //rtc.setTime(18, 35, 00);     // Set the time to 12:00:00 (24hr format)
-  //rtc.setDate(27, 5, 2016);   // Set the date to January 1st, 2014
+  //rtc.setDOW(WEDNESDAY);     // Set Day-of-Week to SUNDAY
+  //rtc.setTime(19, 17, 00);     // Set the time to 12:00:00 (24hr format)
+  //rtc.setDate(19, 7, 2016);   // Set the date to January 1st, 2014
   lcdSystemStart();
 }
 
-void loop()
-{
-  char inByte = ' ';
-  if(Serial.available()){ // only send data back if data has been sent
-    char inByte = Serial.read(); // read the incoming data
-    Serial.println(inByte); // send the data back in a new line so that it is not all one long line
+void loop(){
+  if (Serial.available()) {
+    light(Serial.read() - '0' );
   }
-  normal_run(); 
+  display_time();
   button_check();
 }
