@@ -13,7 +13,7 @@ Main Lights -
 
     <?php
     if (isset($_POST['advance'])){
-	    exec('python /var/www/html/1.py');
+	    exec('/usr/bin/python /var/www/html/1.py');
 	}
     ?>
     <form action="" method="post" align="center">
@@ -24,7 +24,7 @@ Main Lights -
     
     <?php
     if (isset($_POST['iainslights'])){
-	    exec('python /var/www/html/2.py');
+	    exec('/usr/bin/python /var/www/html/2.py');
 	}
     ?>
     <form action="" method="post" align="center">
@@ -35,7 +35,7 @@ Main Lights -
     
     <?php
     if (isset($_POST['eloraslights'])){
-	    exec('python /var/www/html/3.py');
+	    exec('/usr/bin/python /var/www/html/3.py');
 	}
     ?>
     <form action="" method="post" align="center">
