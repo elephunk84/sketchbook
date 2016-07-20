@@ -13,7 +13,7 @@ Main Lights -
 
     <?php
     if (isset($_POST['advance'])){
-	    exec('python 1.py');
+	    exec('python ./1.py');
 	}
     ?>
     <form action="" method="post" align="center">
@@ -24,7 +24,7 @@ Main Lights -
     
     <?php
     if (isset($_POST['iainslights'])){
-	    exec('python 2.py');
+	    exec('python ./2.py');
 	}
     ?>
     <form action="" method="post" align="center">
@@ -35,7 +35,7 @@ Main Lights -
     
     <?php
     if (isset($_POST['eloraslights'])){
-	    exec('python 3,py');
+	    exec('python ./3,py');
 	}
     ?>
     <form action="" method="post" align="center">
