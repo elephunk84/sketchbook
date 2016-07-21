@@ -17,6 +17,7 @@ def home():
 @app.route('/iainslights', methods=['GET', 'POST'])
 def iainslights():
     ser.write('3')
+    return render_template("index.html")
 
 @app.route('/hello')
 def hello_world():
