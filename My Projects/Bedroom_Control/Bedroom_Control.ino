@@ -215,7 +215,7 @@ void setup(){
 }
 
 void loop(){
-  lightcheck();
+//  lightcheck();
   if (Serial.available()) {
     light(Serial.read() - '0' );
   }
