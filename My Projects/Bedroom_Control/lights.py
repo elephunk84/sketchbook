@@ -13,6 +13,10 @@ app = Flask(__name__)
 @app.route('/', methods=['GET', 'POST'])
 def home():
     return render_template("index.html")
+    
+@app.route('/iainslights')
+def iainslights():
+    ser.write('3')
 
 @app.route('/hello')
 def hello_world():
