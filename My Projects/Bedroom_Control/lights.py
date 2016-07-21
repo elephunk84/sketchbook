@@ -14,7 +14,7 @@ app = Flask(__name__)
 def home():
    return 'Hello World'
    
-@app.route(‘/hello’)
+@app.route('/hello')
 def hello_world():
    return ‘hello world’
 
