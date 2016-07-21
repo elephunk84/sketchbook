@@ -12,12 +12,12 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    if request.method == 'POST':
-        if request.form['submit'] == 'advance':
+    if form.validate_on_submit():
+        if 'advance' in request.form:
             ser.write('1')
-        elif request.form['submit'] == 'iainslights':
+        elif 'iainslights' in request.form:
             ser.write('2')
-        elif request.form('submit') == 'eloraslights':
+        elif 'eloraslights' in request.form:
             ser.write('3')
         else:
             pass 
