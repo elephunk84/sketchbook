@@ -17,17 +17,17 @@ def home():
 @app.route('/iainslights', methods=['GET', 'POST'])
 def iainslights():
     ser.write('3')
-    return render_template("index.html")
+    return redirect("/")
 
 @app.route('/eloraslights', methods=['GET', 'POST'])
 def eloraslights():
     ser.write('2')
-    return render_template("index.html")
+    return redirect("/")
 
 @app.route('/bedlights', methods=['GET', 'POST'])
 def bedlights():
     ser.write('1')
-    return render_template("index.html")
+    return redirect("/")
 
 @app.route('/hello')
 def hello_world():
