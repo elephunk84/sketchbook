@@ -16,4 +16,4 @@ def name(name):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    run(host='', port=port, debug=True)
+    run(host='192.168.0.131', port=port, debug=True)
