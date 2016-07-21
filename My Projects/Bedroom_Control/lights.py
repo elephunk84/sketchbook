@@ -8,7 +8,7 @@ from bottle import route, run, template
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
-@app.route('/')
+@route('/')
 def index():
     """Home page"""
     info = {'title': 'Welcome Home!',
