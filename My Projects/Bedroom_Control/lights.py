@@ -4,7 +4,7 @@
 from time import sleep
 import serial
 import os
-from bottle import route, run, template, static_file, get_url
+from bottle import route, run, template, static_file
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
