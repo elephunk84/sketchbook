@@ -197,6 +197,5 @@ void loop(){
   if (Serial.available()) {
     light(Serial.read() - '0' );
   }
-  display_time();
   button_check();
 }
