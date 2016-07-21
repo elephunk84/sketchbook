@@ -12,18 +12,7 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    form = ContactForm()
-    if form.validate_on_submit():
-        if 'advance' in request.form:
-            ser.write('1')
-        elif 'iainslights' in request.form:
-            ser.write('2')
-        elif 'eloraslights' in request.form:
-            ser.write('3')
-        else:
-            pass 
-    elif request.method == 'GET':
-        return render_template("index.html", form=form)
+    return render_template("index.html", form=form)
 
 @app.route('/hello')
 def hello_world():
