@@ -1,14 +1,19 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+import os
+from bottle import route, run, template
 
-from time import sleep
-import serial
-ser = serial.Serial('/dev/ttyACM0', 9600)
-while True:
-    num = raw_input('Number:')
-    if num == '1':
-        ser.write('1')
-    if num == '2':
-        ser.write('2')
-    if num == '3':
-        ser.write('3')
+index_html = '''My first web app! By <strong>{{ author }}</strong>.'''
+
+
+@route('/')
+def index():
+    return template(index_html, author='Real Python')
+
+
+@route('/name/<name>')
+def name(name):
+    return template(index_html, author=name)
+
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8080))
+    run(host='', port=port, debug=True)

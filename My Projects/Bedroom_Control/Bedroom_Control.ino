@@ -174,6 +174,7 @@ void light(int n){
   }
   
 void lightcheck(){
+  String package;
   if (iainLightsState == HIGH){
     Serial.println("Iains Lights On");
   }
