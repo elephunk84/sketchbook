@@ -172,6 +172,27 @@ void light(int n){
       break;
     }
   }
+  
+void lightcheck(){
+  if (iainLightsState == HIGH){
+    Serial.print("Iains Lights On");
+  }
+  else if (iainLightsState == LOW){
+    Serial.print("Iains Lights Off");
+  }
+  if (eloraLightsState == HIGH){
+    Serial.print("Eloras Lights On");
+  }
+  else if (eloraLightsState == LOW){
+    Serial.print("Eloras Lights Off");
+  }
+  if (bedLightsState == HIGH){
+    Serial.print("Bed Lights On");
+  }
+  else if (bedLightsState == LOW){
+    Serial.print("Bed Lights Off");
+  }
+}
     
 void setup(){
   pinMode(bedLightsButton, INPUT_PULLUP);
@@ -194,6 +215,7 @@ void setup(){
 }
 
 void loop(){
+  lightcheck();
   if (Serial.available()) {
     light(Serial.read() - '0' );
   }
