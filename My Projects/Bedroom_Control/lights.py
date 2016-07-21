@@ -20,12 +20,12 @@ def iainslights():
     return render_template("index.html")
 
 @app.route('/eloraslights', methods=['GET', 'POST'])
-def iainslights():
+def eloraslights():
     ser.write('2')
     return render_template("index.html")
 
 @app.route('/bedlights', methods=['GET', 'POST'])
-def iainslights():
+def bedlights():
     ser.write('1')
     return render_template("index.html")
 
