@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<link rel="stylesheet" href="views/style.css" type='css'>
+<link href="style.css" rel="stylesheet" type='css'>
 <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <title>{{title}}</title>
 </head>
