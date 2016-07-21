@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<link href="{{ get_url('static', path='views/style.css") }}" rel="stylesheet" type='css'>
+<link href="{{ url('static', path='views/style.css") }}" rel="stylesheet" type='css'>
 <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 <title>{{title}}</title>
 </head>
