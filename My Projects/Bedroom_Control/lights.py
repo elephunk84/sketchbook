@@ -10,12 +10,10 @@ ser = serial.Serial('/dev/ttyACM0', 9600)
 
 @app.route('/')
 def index():
-       """Home page"""
-
+    """Home page"""
     info = {'title': 'Welcome Home!',
-            'content': 'Hello World'
-            }
-
+        'content': 'Hello World'
+    }
     return template('index_html.tpl', info)
     
 if __name__ == '__main__':
