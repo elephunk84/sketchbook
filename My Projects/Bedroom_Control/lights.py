@@ -4,8 +4,8 @@
 from time import sleep
 import serial
 ser = serial.Serial('/dev/ttyACM0', 9600)
-num = raw_input('Number:')
 while True:
+    num = raw_input('Number:')
     if num == '1':
         ser.write('1')
     if num == '2':
