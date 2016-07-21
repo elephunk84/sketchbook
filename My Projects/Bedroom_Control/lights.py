@@ -8,10 +8,10 @@ from bottle import route, run, template, static_file, url
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
-@get('/<filename:re:.*\.css>')
-def stylesheets(filename):
-    return static_file(filename, root='static/')
-    
+@route('/static/<filepath:path>')
+def server_static(filepath):
+    return static_file(filepath, root='static/')
+        
 @route('/')
 def index():
     """Home page"""
