@@ -14,7 +14,7 @@ def index():
         if 'download' in request.form:
            pass  
         elif 'watch' in request.form:
-           pass ... etc
+           pass 
 
 @route('/name/<name>')
 def name(name):
