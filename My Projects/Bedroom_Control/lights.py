@@ -10,7 +10,7 @@ ser = serial.Serial('/dev/ttyACM0', 9600)
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
         if request.form['submit'] == 'advance':
