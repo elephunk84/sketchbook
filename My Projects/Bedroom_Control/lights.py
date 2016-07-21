@@ -4,7 +4,7 @@
 from time import sleep
 import serial
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
