@@ -21,7 +21,8 @@ def home():
             ser.write('3')
         else:
             pass 
-    return render_template("index.html")
+    elif request.method == 'GET':
+        return render_template("index.html")
 
 @app.route('/hello')
 def hello_world():
