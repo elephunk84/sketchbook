@@ -5,7 +5,7 @@ from time import sleep
 import serial
 ser = serial.Serial('/dev/ttyACM0', 9600)
 while True:
-    while True:
+    while 1:
         print ser.readline()
     num = raw_input('Number:')
     if num == '1':
