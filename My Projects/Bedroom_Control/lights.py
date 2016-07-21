@@ -8,9 +8,9 @@ from bottle import route, run, template, static_file, url
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
-@get('/<filename:re:.*\.css>')
+@route('/<filename>.css')
 def stylesheets(filename):
-    return static_file(filename, root='static/')
+    return static_file('{}.css'.format(filename), root='static')
     
 @route('/')
 def index():
