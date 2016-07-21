@@ -8,8 +8,7 @@ from bottle import route, run, template
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
-index_html = '''<html>
-
+index_html = '''
 <head>
 <link rel="stylesheet" href="style.css">
 <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
@@ -55,7 +54,6 @@ Main Lights -
 </div>
 </body>
 
-</html>
 .'''
 
 
