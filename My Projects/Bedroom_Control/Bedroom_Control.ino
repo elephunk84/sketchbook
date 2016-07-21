@@ -175,22 +175,22 @@ void light(int n){
   
 void lightcheck(){
   if (iainLightsState == HIGH){
-    Serial.print("Iains Lights On");
+    Serial.println("Iains Lights On");
   }
   else if (iainLightsState == LOW){
-    Serial.print("Iains Lights Off");
+    Serial.println("Iains Lights Off");
   }
   if (eloraLightsState == HIGH){
-    Serial.print("Eloras Lights On");
+    Serial.println("Eloras Lights On");
   }
   else if (eloraLightsState == LOW){
-    Serial.print("Eloras Lights Off");
+    Serial.println("Eloras Lights Off");
   }
   if (bedLightsState == HIGH){
-    Serial.print("Bed Lights On");
+    Serial.println("Bed Lights On");
   }
   else if (bedLightsState == LOW){
-    Serial.print("Bed Lights Off");
+    Serial.println("Bed Lights Off");
   }
 }
     
