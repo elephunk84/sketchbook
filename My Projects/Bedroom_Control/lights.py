@@ -10,12 +10,8 @@ ser = serial.Serial('/dev/ttyACM0', 9600)
 
 @route('/')
 def index():
-    if form.validate_on_submit():
-        if 'download' in request.form:
-           pass  
-        elif 'watch' in request.form:
-           pass 
-
+    return template(index)
+     
 @route('/name/<name>')
 def name(name):
     return template(index_html, author=name)
