@@ -4,7 +4,7 @@
 from time import sleep
 import serial
 import os
-from flask import Flask
+from flask import Flask, render_template
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-   return 'Welcome Home Iain'
+   return render_template("index.html")
    
 @app.route('/hello')
 def hello_world():
