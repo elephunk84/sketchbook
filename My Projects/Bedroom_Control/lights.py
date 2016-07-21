@@ -12,6 +12,15 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
+    if request.method == 'POST':
+        if request.form['submit'] == 'advance':
+            ser.write('1')
+        elif request.form['submit'] == 'iainslights':
+            ser.write('2')
+        elif request.form('submit') == 'eloraslights':
+            ser.write('3')
+        else:
+            pass 
    return render_template("index.html")
    
 @app.route('/hello')
