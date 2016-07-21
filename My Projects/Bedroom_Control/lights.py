@@ -8,59 +8,13 @@ from bottle import route, run, template
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
-index_html = '''
-<head>
-<link rel="stylesheet" href="style.css">
-<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-<title>IBedroom Lighting Controll</title>
-</head>
-
-<body>
-<h2 align="center">
-Main Lights - 
-</h2>
-
-    <?php
-    if (isset($_POST['advance'])){
-	    exec('/usr/bin/python /var/www/html/1.py');
-	}
-    ?>
-    <form action="" method="post" align="center">
-    <button type="submit" name="advance" id="submit">Advance</button>
-    </form>
-    <h2 align="center">
-    Iains Lights - 
-    
-    <?php
-    if (isset($_POST['iainslights'])){
-	    exec('/usr/bin/python /var/www/html/2.py');
-	}
-    ?>
-    <form action="" method="post" align="center">
-    <button type="submit" name="iainslights" id="iainslights">Iains Lights</button>
-    </form>
-    <h2 align="center">
-    Eloras Lights - 
-    
-    <?php
-    if (isset($_POST['eloraslights'])){
-	    exec('/usr/bin/python /var/www/html/3.py');
-	}
-    ?>
-    <form action="" method="post" align="center">
-    <button type="submit" name="eloraslights" id="eloraslights">Eloras Lights</button>
-    </form>
-
-</div>
-</body>
-
-.'''
-
-
 @route('/')
 def index():
-    return template(index_html, author='Real Python')
-
+    if form.validate_on_submit():
+        if 'download' in request.form:
+           pass  
+        elif 'watch' in request.form:
+           pass ... etc
 
 @route('/name/<name>')
 def name(name):
