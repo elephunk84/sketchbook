@@ -11,11 +11,6 @@ ser = serial.Serial('/dev/ttyACM0', 9600)
 @route('/')
 def index():
     return template(index)
-     
-@route('/name/<name>')
-def name(name):
-    return template(index_html, author=name)
-
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
