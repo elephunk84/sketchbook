@@ -19,6 +19,16 @@ def iainslights():
     ser.write('3')
     return render_template("index.html")
 
+@app.route('/eloraslights', methods=['GET', 'POST'])
+def iainslights():
+    ser.write('2')
+    return render_template("index.html")
+
+@app.route('/bedlights', methods=['GET', 'POST'])
+def iainslights():
+    ser.write('1')
+    return render_template("index.html")
+
 @app.route('/hello')
 def hello_world():
    return 'hello world'
