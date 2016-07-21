@@ -4,10 +4,14 @@
 from time import sleep
 import serial
 import os
-from bottle import route, run, template
+from bottle import route, run, template, static_file, get_url
 
 ser = serial.Serial('/dev/ttyACM0', 9600)
 
+@route('/static/:path#.+#', name='static')
+def static(path):
+    return static_file(path, root='static')
+    
 @route('/')
 def index():
     """Home page"""
